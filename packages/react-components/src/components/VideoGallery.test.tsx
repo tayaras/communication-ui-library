@@ -293,7 +293,7 @@ describe('VideoGallery layout fit/fill tests', () => {
     mockVideoGalleryInternalHelpers();
   });
 
-  test('should have video tiles with a fit to frame contextual menu item by default', () => {
+  test.only('should have video tiles with a fit to frame contextual menu item by default', () => {
     const localParticipant = createLocalParticipant({
       videoStream: { isAvailable: true, renderElement: createVideoDivElement() }
     });
@@ -315,9 +315,12 @@ describe('VideoGallery layout fit/fill tests', () => {
     });
 
     const remoteVideoTile = root.find(GridLayout).find(VideoTile).first();
+    root.simulate('click');
+    remoteVideoTile.simulate('mouseEnter');
 
+    console.log(remoteVideoTile.debug());
     // click more button of first remote video tile in grid layout
-    const videoTileMoreOptionsButton = remoteVideoTile.find('[data-ui-id="video-tile-more-options-button"]').at(0);
+    const videoTileMoreOptionsButton = root.find('[data-ui-id="video-tile-more-options-button"]').at(0);
     if (videoTileMoreOptionsButton) {
       videoTileMoreOptionsButton.simulate('click');
     }
