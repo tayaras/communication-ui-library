@@ -4,7 +4,6 @@
 import { concatStyleSets } from '@fluentui/react';
 import React, { useMemo } from 'react';
 import { HorizontalGalleryStyles } from '../HorizontalGallery';
-import { ResponsiveHorizontalGallery } from '../ResponsiveHorizontalGallery';
 import { ResponsiveVerticalGallery } from '../ResponsiveVerticalGallery';
 import { HORIZONTAL_GALLERY_BUTTON_WIDTH, HORIZONTAL_GALLERY_GAP } from '../styles/HorizontalGallery.styles';
 import {

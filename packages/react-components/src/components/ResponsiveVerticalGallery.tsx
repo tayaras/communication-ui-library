@@ -4,7 +4,7 @@
 import { IStyle, mergeStyles } from '@fluentui/react';
 import React, { useRef } from 'react';
 import { HorizontalGalleryStyles } from './HorizontalGallery';
-import { _convertRemToPx as convertRemToPx } from '@internal/acs-ui-common';
+import { _convertRemToPx as convertRemToPx, _pxToRem } from '@internal/acs-ui-common';
 import { _useContainerHeight, _useContainerWidth } from './utils/responsive';
 import { VerticalGallery } from './VerticalGallery';
 
@@ -59,6 +59,11 @@ const calculateChildrenPerPage = (args: {
 
   const childHeight = convertRemToPx(childHeightRem);
   const gapWidth = convertRemToPx(gapWidthRem);
+
+  // max height of the video tiles in the verticalGallery
+  const childHeightMax = _pxToRem(144);
+  // min height of the video tiles in the verticalGallery
+  const childHeightMin = _pxToRem(90);
 
   /** First check how many children can fit in containerHeight.
    *    _________________
