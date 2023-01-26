@@ -23,6 +23,8 @@ export const VideoGalleryResponsiveHorizontalGallery = (props: {
   isNarrow?: boolean;
   horizontalGalleryElements?: JSX.Element[];
   styles?: HorizontalGalleryStyles;
+  parentHeight?: number;
+  parentWidth?: number;
 }): JSX.Element => {
   const { shouldFloatLocalVideo = false, isNarrow = false, horizontalGalleryElements, styles } = props;
 
@@ -38,9 +40,6 @@ export const VideoGalleryResponsiveHorizontalGallery = (props: {
         key="responsive-horizontal-gallery"
         containerStyles={containerStyles}
         verticalGalleryStyles={galleryStyles}
-        childHeightRem={
-          isNarrow ? SMALL_HORIZONTAL_GALLERY_TILE_SIZE_REM.height : LARGE_HORIZONTAL_GALLERY_TILE_SIZE_REM.height
-        }
         buttonWidthRem={HORIZONTAL_GALLERY_BUTTON_WIDTH}
         gapWidthRem={HORIZONTAL_GALLERY_GAP}
       >

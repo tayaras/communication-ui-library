@@ -137,6 +137,8 @@ export const FloatingLocalVideoLayout = (props: FloatingLocalVideoLayoutProps): 
         shouldFloatLocalVideo={true}
         horizontalGalleryElements={horizontalGalleryTiles}
         styles={styles?.horizontalGallery}
+        parentHeight={props.parentHeight}
+        parentWidth={props.parentWidth}
       />
     );
   }, [isNarrow, horizontalGalleryTiles, styles?.horizontalGallery]);

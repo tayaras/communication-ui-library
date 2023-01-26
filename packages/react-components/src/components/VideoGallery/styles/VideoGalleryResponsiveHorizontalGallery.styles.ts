@@ -47,7 +47,7 @@ export const LARGE_HORIZONTAL_GALLERY_TILE_SIZE_REM = { height: 7.5, width: 10 }
  * VerticalGallery tile size in rem
  * @private
  */
-export const LARGE_VERTICAL_GALLERY_TILE_SIZE_REM = { height: 7.5, width: 13.4375 };
+export const LARGE_VERTICAL_GALLERY_TILE_SIZE_PX = { minHeight: 90, maxHeight: 144, width: 144 };
 
 /**
  * @private

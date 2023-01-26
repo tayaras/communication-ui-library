@@ -7,6 +7,7 @@ import { HorizontalGalleryStyles } from './HorizontalGallery';
 import { _convertRemToPx as convertRemToPx, _pxToRem } from '@internal/acs-ui-common';
 import { _useContainerHeight, _useContainerWidth } from './utils/responsive';
 import { VerticalGallery } from './VerticalGallery';
+import { LARGE_VERTICAL_GALLERY_TILE_SIZE_PX } from './VideoGallery/styles/VideoGalleryResponsiveHorizontalGallery.styles';
 
 /**
  * Wrapped HorizontalGallery that adjusts the number of items per page based on the
@@ -16,11 +17,10 @@ export const ResponsiveVerticalGallery = (props: {
   children: React.ReactNode;
   containerStyles: IStyle;
   verticalGalleryStyles: HorizontalGalleryStyles;
-  childHeightRem: number;
   gapWidthRem: number;
   buttonWidthRem?: number;
 }): JSX.Element => {
-  const { childHeightRem, gapWidthRem, buttonWidthRem = 0 } = props;
+  const { gapWidthRem, buttonWidthRem = 0 } = props;
   const containerRef = useRef<HTMLDivElement>(null);
   const containerHeight = _useContainerHeight(containerRef);
 
@@ -30,7 +30,6 @@ export const ResponsiveVerticalGallery = (props: {
   const childrenPerPage = calculateChildrenPerPage({
     numberOfChildren: React.Children.count(props.children),
     containerHeight: (containerHeight ?? 0) - leftPadding - rightPadding,
-    childHeightRem,
     gapWidthRem,
     buttonWidthRem
   });
@@ -51,19 +50,17 @@ export const ResponsiveVerticalGallery = (props: {
 const calculateChildrenPerPage = (args: {
   numberOfChildren: number;
   containerHeight: number;
-  childHeightRem: number;
   gapWidthRem: number;
   buttonWidthRem: number;
 }): number => {
-  const { numberOfChildren, containerHeight, childHeightRem, gapWidthRem } = args;
+  const { numberOfChildren, containerHeight, gapWidthRem } = args;
 
-  const childHeight = convertRemToPx(childHeightRem);
   const gapWidth = convertRemToPx(gapWidthRem);
 
   // max height of the video tiles in the verticalGallery
-  const childHeightMax = _pxToRem(144);
+  const childHeightMax = LARGE_VERTICAL_GALLERY_TILE_SIZE_PX.maxHeight;
   // min height of the video tiles in the verticalGallery
-  const childHeightMin = _pxToRem(90);
+  const childHeightMin = LARGE_VERTICAL_GALLERY_TILE_SIZE_PX.minHeight;
 
   /** First check how many children can fit in containerHeight.
    *    _________________
@@ -75,11 +72,9 @@ const calculateChildrenPerPage = (args: {
    *   |                |
    *   |________________|
    *
-   * containerHeight = n * childHeight + (n - 1) * gapWidth
-   *
-   *  containerHeight = n * childWidth + (n - 1) * gapWidth. Isolate n and take the floor.
+   * numberOfChildren = containerHeight - (padding + ButtonHeight) / childHeightMin
    */
-  const numberOfChildrenInContainer = Math.floor((containerHeight + gapWidth) / (childHeight + gapWidth));
+  const numberOfChildrenInContainer = Math.floor((containerHeight + gapWidth) / gapWidth);
   // If all children fit then return numberOfChildrenInContainer
   if (numberOfChildren <= numberOfChildrenInContainer) {
     return numberOfChildrenInContainer;
