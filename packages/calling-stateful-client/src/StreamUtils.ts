@@ -3,10 +3,13 @@
 
 import {
   CreateViewOptions,
+  Features,
   LocalVideoStream,
+  VideoDeviceInfo,
   VideoStreamRenderer,
   VideoStreamRendererView
 } from '@azure/communication-calling';
+import { BackgroundBlurEffect } from '@azure/communication-calling-effects';
 import { CommunicationIdentifierKind } from '@azure/communication-common';
 import { LocalVideoStreamState, RemoteVideoStreamState } from './CallClientState';
 import { CallContext } from './CallContext';
@@ -336,6 +339,8 @@ async function createViewUnparentedVideo(
 ): Promise<CreateViewResult | undefined> {
   const renderInfo = internalContext.getUnparentedRenderInfo(stream);
 
+  console.log('Create view for unparented local video stream', stream, renderInfo);
+
   if (renderInfo && renderInfo.status === 'Rendered') {
     console.warn('Unparented LocalVideoStream is already rendered');
     return;
@@ -367,6 +372,12 @@ async function createViewUnparentedVideo(
     internalContext.deleteUnparentedRenderInfo(stream);
     throw e;
   }
+
+  // create throwaway video stream and apply background blur effect
+  const localVideoStream2 = new LocalVideoStream(stream.source);
+  const videoEffectsAPI = localVideoStream2.feature(Features.VideoEffects);
+  console.log('starting video blur effect');
+  videoEffectsAPI.startEffects(new BackgroundBlurEffect());
 
   // Since render could take some time, we need to check if the stream is still valid and if we received a signal to
   // stop rendering.

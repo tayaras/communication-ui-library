@@ -6,7 +6,8 @@ import {
   Call,
   LocalVideoStream,
   StartCallOptions,
-  VideoDeviceInfo
+  VideoDeviceInfo,
+  VideoStreamRendererView
 } from '@azure/communication-calling';
 /* @conditional-compile-remove(dialpad) */ /* @conditional-compile-remove(PSTN-calls) */
 import { DtmfTone, AddPhoneNumberOptions } from '@azure/communication-calling';
@@ -22,6 +23,8 @@ import { disposeAllLocalPreviewViews, _isInCall, _isInLobbyOrConnecting, _isPrev
 import { CommunicationUserIdentifier, PhoneNumberIdentifier, UnknownIdentifier } from '@azure/communication-common';
 /* @conditional-compile-remove(PSTN-calls) */
 import { CommunicationIdentifier } from '@azure/communication-common';
+
+let JAMES = 0;
 
 /**
  * Object containing all the handlers required for calling components.
@@ -244,6 +247,7 @@ export const createDefaultCommonCallingHandlers = memoizeOne(
     const onCreateLocalStreamView = async (
       options = { scalingMode: 'Crop', isMirrored: true } as VideoStreamOptions
     ): Promise<void | CreateVideoStreamViewResult> => {
+      console.log('onCreateLocalStreamView');
       if (!call || call.localVideoStreams.length === 0) {
         return;
       }
@@ -258,7 +262,27 @@ export const createDefaultCommonCallingHandlers = memoizeOne(
         return;
       }
 
-      const { view } = (await callClient.createView(call.id, undefined, localStream, options)) ?? {};
+      JAMES++;
+      console.log('onCreateLocalStreamView creatingView', localStream, 'i', JAMES);
+      let view: VideoStreamRendererView | undefined;
+      if (JAMES === 1) {
+        const res = await callClient.createView(call.id, undefined, localStream, options);
+        view = res?.view;
+      } else {
+        const videoDeviceInfo = callClient.getState().deviceManager.selectedCamera;
+        console.log('videoDeviceInfo', videoDeviceInfo);
+        const res = await callClient.createView(
+          undefined,
+          undefined,
+          {
+            source: videoDeviceInfo!,
+            mediaStreamType: 'Video'
+          },
+          options
+        );
+        view = res?.view;
+      }
+
       return view ? { view } : undefined;
     };
 

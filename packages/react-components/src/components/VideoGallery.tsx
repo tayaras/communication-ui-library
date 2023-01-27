@@ -24,7 +24,7 @@ import { RemoteScreenShare } from './VideoGallery/RemoteScreenShare';
 import { LocalVideoCameraCycleButtonProps } from './LocalVideoCameraButton';
 import { _ICoordinates, _ModalClone } from './ModalClone/ModalClone';
 import { _formatString } from '@internal/acs-ui-common';
-import { _LocalVideoTile } from './LocalVideoTile';
+import { _LocalSampleVideoTile, _LocalVideoTile } from './LocalVideoTile';
 /* @conditional-compile-remove(rooms) */
 import { _usePermissions } from '../permissions';
 import { DefaultLayout } from './VideoGallery/DefaultLayout';
@@ -348,6 +348,19 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
           localVideoCameraSwitcherLabel={strings.localVideoCameraSwitcherLabel}
           localVideoSelectedDescription={strings.localVideoSelectedDescription}
           styles={localVideoTileStyles}
+        />
+        <_LocalSampleVideoTile
+          userId={localParticipant.userId}
+          onCreateLocalStreamView={onCreateLocalStreamView}
+          onDisposeLocalStreamView={onDisposeLocalStreamView}
+          isMuted={localParticipant.isMuted}
+          displayName={isNarrow ? '' : strings.localVideoLabel}
+          initialsName={initialsName}
+          localVideoViewOptions={localVideoViewOptions}
+          showLabel={!(shouldFloatLocalVideo && isNarrow)}
+          showMuteIndicator={showMuteIndicator}
+          styles={localVideoTileStyles}
+          isOn={!!localParticipant?.videoStream?.isAvailable}
         />
       </Stack>
     );
