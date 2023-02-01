@@ -22,6 +22,13 @@ export const verticalGalleryContainerStyle = (shouldFloatLocalVideo: boolean, is
   };
 };
 
+export const ScreenshareGalleryContainerStyle = (): IStyle => {
+  return {
+    height: `calc(100% - ${_pxToRem(LARGE_FLOATING_MODAL_SIZE_PX.height)})`,
+    maxWidth: `${(LARGE_VERTICAL_GALLERY_TILE_SIZE_REM.width + 1) * 3}rem`
+  };
+};
+
 export const horizontalGalleryContainerStyle = (shouldFloatLocalVideo: boolean, isNarrow: boolean): IStyle => {
   return {
     minHeight: isNarrow
@@ -31,7 +38,7 @@ export const horizontalGalleryContainerStyle = (shouldFloatLocalVideo: boolean, 
       ? isNarrow
         ? `calc(100% - ${_pxToRem(SMALL_FLOATING_MODAL_SIZE_PX.width)})`
         : `calc(100% - ${_pxToRem(LARGE_FLOATING_MODAL_SIZE_PX.width)})`
-      : '100%',
+      : '30%',
     paddingRight: '0.5rem'
   };
 };

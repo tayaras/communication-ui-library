@@ -9,6 +9,7 @@ import { GridLayout } from '../GridLayout';
 import { isNarrowWidth } from '../utils/responsive';
 import { FloatingLocalVideo } from './FloatingLocalVideo';
 import { LayoutProps } from './Layout';
+import { ScreenShareOverflowGallery } from './ScreenShareOverflowGallery';
 /* @conditional-compile-remove(pinned-participants) */
 import { ScrollableHorizontalGallery } from './ScrollableHorizontalGallery';
 import {
@@ -143,6 +144,16 @@ export const FloatingLocalVideoLayout = (props: FloatingLocalVideoLayoutProps): 
       return <ScrollableHorizontalGallery horizontalGalleryElements={horizontalGalleryTiles} />;
     }
     if (overflowGalleryPosition === 'vertical') {
+      if (screenShareComponent) {
+        return (
+          <ScreenShareOverflowGallery
+            isNarrow={isNarrow}
+            shouldFloatLocalVideo={true}
+            horizontalGalleryElements={horizontalGalleryTiles}
+            styles={styles?.horizontalGallery}
+          />
+        );
+      }
       return (
         <VideoGalleryResponsiveVerticalGallery
           isNarrow={isNarrow}

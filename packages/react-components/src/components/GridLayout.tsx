@@ -63,6 +63,7 @@ export const GridLayout = (props: GridLayoutProps): JSX.Element => {
   }, [observer, containerRef]);
 
   const gridProps = useMemo(() => {
+    console.log(currentWidth, currentHeight);
     return calculateGridProps(numberOfChildren, currentWidth, currentHeight);
   }, [numberOfChildren, currentWidth, currentHeight]);
 
@@ -213,6 +214,7 @@ export const calculateGridProps = (numberOfItems: number, width: number, height:
  * @returns - classname
  */
 export const createGridStyles = (numberOfItems: number, gridProps: GridProps): string => {
+  console.log('help!');
   const isHorizontal = gridProps.fillDirection === 'horizontal';
   // Blocks are either rows or columns depending on whether we fill horizontally or vertically. Each block may differ in the number of cells.
   const blocks = isHorizontal ? gridProps.rows : gridProps.columns;
