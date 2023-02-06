@@ -4,7 +4,7 @@
 import { Stack } from '@fluentui/react';
 import { _formatString } from '@internal/acs-ui-common';
 import React, { useMemo } from 'react';
-import { OnRenderAvatarCallback, VideoStreamOptions, CreateVideoStreamViewResult } from '../types';
+import { OnRenderAvatarCallback, VideoStreamOptions, CreateVideoStreamViewResult, VideoGalleryStream } from '../types';
 import { LocalVideoCameraCycleButton, LocalVideoCameraCycleButtonProps } from './LocalVideoCameraButton';
 import { StreamMedia } from './StreamMedia';
 import {
@@ -38,6 +38,7 @@ export const _LocalVideoTile = React.memo(
     localVideoSelectedDescription?: string;
     styles?: VideoTileStylesProps;
     personaMinSize?: number;
+    localVideoStream?: VideoGalleryStream;
   }) => {
     const {
       isAvailable,
@@ -88,7 +89,7 @@ export const _LocalVideoTile = React.memo(
         // Returning `undefined` results in the placeholder with avatar being shown
         return undefined;
       }
-
+      // const videoEffectsFeatureApi = renderElement.features(AzureCommunicationCallingSDK.Features.VideoEffects);
       return (
         <>
           <FloatingLocalCameraCycleButton

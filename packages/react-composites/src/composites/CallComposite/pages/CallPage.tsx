@@ -5,7 +5,7 @@ import { DiagnosticQuality } from '@azure/communication-calling';
 import { useId } from '@fluentui/react-hooks';
 import { _isInCall } from '@internal/calling-component-bindings';
 import { ErrorBar, OnRenderAvatarCallback, ParticipantMenuItemsCallback } from '@internal/react-components';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { AvatarPersonaDataCallback } from '../../common/AvatarPersona';
 import { useLocale } from '../../localization';
 import { CallCompositeOptions } from '../CallComposite';
@@ -21,6 +21,10 @@ import { mediaGallerySelector } from '../selectors/mediaGallerySelector';
 import { mutedNotificationSelector } from '../selectors/mutedNotificationSelector';
 import { networkReconnectTileSelector } from '../selectors/networkReconnectTileSelector';
 import { reduceCallControlsForMobile } from '../utils';
+import { LocalVideoStream, VideoEffectsFeature } from '@azure/communication-calling';
+import { BackgroundBlurEffect, BackgroundReplacementEffect } from '@azure/communication-calling-effects';
+import * as AzureCommunicationCallingSDK from '@azure/communication-calling';
+import { IconButton, Stack } from '@fluentui/react';
 
 /**
  * @private
@@ -34,6 +38,8 @@ export interface CallPageProps {
   onFetchAvatarPersonaData?: AvatarPersonaDataCallback;
   onFetchParticipantMenuItems?: ParticipantMenuItemsCallback;
   options?: CallCompositeOptions;
+  localVideoStreams: LocalVideoStream[];
+  adapter: unknown;
 }
 
 /**
@@ -66,6 +72,72 @@ export const CallPage = (props: CallPageProps): JSX.Element => {
 
   const drawerMenuHostId = useId('drawerMenuHost');
 
+  const startBackgroundBlur = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const localVideoStreams = (props.adapter as any)?._call?.localVideoStreams as LocalVideoStream[];
+    if (localVideoStreams.length) {
+      const localVideoStream: LocalVideoStream = localVideoStreams[0];
+      const videoEffectsFeatureApi: VideoEffectsFeature = localVideoStream.feature(
+        AzureCommunicationCallingSDK.Features.VideoEffects
+      );
+      const backgroundBlurEffect = new BackgroundBlurEffect();
+      const backgroundBlurSupported = await backgroundBlurEffect.isSupported();
+      if (backgroundBlurSupported) {
+        // Use the video effects feature api we created to start effects
+        await videoEffectsFeatureApi.startEffects(backgroundBlurEffect);
+      }
+    }
+  }, [props.adapter]);
+
+  const startBackgroundEffect = useCallback(
+    async (url?) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const localVideoStreams = (props.adapter as any)?._call?.localVideoStreams as LocalVideoStream[];
+      if (localVideoStreams.length) {
+        const localVideoStream: LocalVideoStream = localVideoStreams[0];
+        const videoEffectsFeatureApi: VideoEffectsFeature = localVideoStream.feature(
+          AzureCommunicationCallingSDK.Features.VideoEffects
+        );
+        let backgroundReplacementEffect;
+        // Create the effect instance
+        if (url) {
+          backgroundReplacementEffect = new BackgroundReplacementEffect({
+            backgroundImageUrl: url
+          });
+        } else {
+          backgroundReplacementEffect = new BackgroundReplacementEffect({
+            backgroundImageUrl:
+              'https://3.bp.blogspot.com/-hhfAmey1zLY/VdPTWACinnI/AAAAAAAARXM/-p11ep6puvM/s1600/windows-xp-bliss-wallpapers-hd-wallpapers.jpg'
+          });
+        }
+        // Recommended: Check support
+        const backgroundReplacementSupported = await backgroundReplacementEffect.isSupported();
+        if (backgroundReplacementSupported) {
+          // Use the video effects feature api as before to start/stop effects
+          await videoEffectsFeatureApi.startEffects(backgroundReplacementEffect);
+        }
+      }
+    },
+    [props.adapter]
+  );
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const getBase64: (file: File) => void = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+  const onChange = (files) => {
+    console.log(files[0]);
+    getBase64(files[0]).then((base64) => {
+      localStorage['fileBase64'] = base64;
+      console.debug('file stored', base64);
+      console.log(base64);
+      startBackgroundEffect(base64);
+    });
+  };
   return (
     <CallArrangement
       id={drawerMenuHostId}
@@ -87,16 +159,46 @@ export const CallPage = (props: CallPageProps): JSX.Element => {
       onRenderGalleryContent={() =>
         _isInCall(callStatus) ? (
           isNetworkHealthy(networkReconnectTileProps.networkReconnectValue) ? (
-            <MediaGallery
-              isMobile={mobileView}
-              {...mediaGalleryProps}
-              {...mediaGalleryHandlers}
-              onRenderAvatar={onRenderAvatar}
-              onFetchAvatarPersonaData={onFetchAvatarPersonaData}
-              /* @conditional-compile-remove(pinned-participants) */
-              remoteVideoTileMenuOptions={options?.remoteVideoTileMenu}
-              drawerMenuHostId={drawerMenuHostId}
-            />
+            <>
+              <button onClick={startBackgroundBlur}>Blur Me</button>
+              <button onClick={startBackgroundEffect}>upload video background </button>
+              {
+                // eslint-disable-next-line react/no-unknown-property
+                <>
+                  <Stack
+                    verticalAlign="center"
+                    horizontalAlign="center"
+                    onClick={() => {
+                      inputRef.current?.click();
+                    }}
+                  >
+                    <IconButton iconProps={{ iconName: 'VideoTileMoreOptions' }} />
+                  </Stack>
+                  <input
+                    ref={inputRef}
+                    hidden
+                    type="file"
+                    onClick={(e) => {
+                      // To ensure that `onChange` is fired even if the same file is picked again.
+                      e.currentTarget.value = '';
+                    }}
+                    onChange={(e) => {
+                      onChange && onChange(e.currentTarget.files);
+                    }}
+                  />
+                </>
+              }
+              <MediaGallery
+                isMobile={mobileView}
+                {...mediaGalleryProps}
+                {...mediaGalleryHandlers}
+                onRenderAvatar={onRenderAvatar}
+                onFetchAvatarPersonaData={onFetchAvatarPersonaData}
+                /* @conditional-compile-remove(pinned-participants) */
+                remoteVideoTileMenuOptions={options?.remoteVideoTileMenu}
+                drawerMenuHostId={drawerMenuHostId}
+              />
+            </>
           ) : (
             <NetworkReconnectTile {...networkReconnectTileProps} />
           )

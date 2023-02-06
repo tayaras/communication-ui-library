@@ -33,7 +33,7 @@ import { useId } from '@fluentui/react-hooks';
 import { HoldPage } from './pages/HoldPage';
 /* @conditional-compile-remove(unsupported-browser) */
 import { UnsupportedBrowserPage } from './pages/UnsupportedBrowser';
-import { PermissionConstraints } from '@azure/communication-calling';
+import { LocalVideoStream, PermissionConstraints } from '@azure/communication-calling';
 
 /**
  * Props for {@link CallComposite}.
@@ -308,6 +308,8 @@ const MainScreen = (props: MainScreenProps): JSX.Element => {
           /* @conditional-compile-remove(one-to-n-calling) @conditional-compile-remove(PSTN-calls) */
           modalLayerHostId={props.modalLayerHostId}
           options={props.options}
+          adapter={adapter}
+          localVideoStreams={adapter.getState().call?.localVideoStreams as LocalVideoStream[]}
         />
       );
       break;
