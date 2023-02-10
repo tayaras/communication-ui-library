@@ -215,7 +215,7 @@ const MessageBubble = (props: ChatMessageComponentAsMessageBubbleProps): JSX.Ele
           details={
             messageStatus === 'failed' ? (
               <div className={chatMessageFailedTagStyle(theme)}>{strings.failToSendTag}</div>
-            ) : message.editedOn ? (
+            ) : message.editedOn && !message.policyViolation ? (
               <div className={chatMessageEditedTagStyle(theme)}>{strings.editedTag}</div>
             ) : undefined
           }

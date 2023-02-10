@@ -17,6 +17,9 @@ type ChatMessageContentProps = {
 
 /** @private */
 export const ChatMessageContent = (props: ChatMessageContentProps): JSX.Element => {
+  if (props.message.policyViolation) {
+    return MessageContentAsDLP(props);
+  }
   switch (props.message.contentType) {
     case 'text':
       return MessageContentAsText(props);
@@ -60,6 +63,29 @@ const MessageContentAsText = (props: ChatMessageContentProps): JSX.Element => {
       >
         {props.message.content}
       </Linkify>
+    </div>
+  );
+};
+
+const MessageContentAsDLP = (props: ChatMessageContentProps): JSX.Element => {
+  const liveAuthor = _formatString(props.liveAuthorIntro, { author: `${props.message.senderDisplayName}` });
+  return (
+    <div data-ui-status={props.message.status} role="text" aria-label={props.messageContentAriaText}>
+      <LiveMessage
+        message={`${props.message.mine ? '' : liveAuthor} ${extractContent('this is DLP message')}`}
+        aria-live="polite"
+      />
+      <p style={{ fontStyle: 'italic', color: 'red' }}>
+        {'This message was blocked due to organization policy. '}
+        <a
+          href={'https://go.microsoft.com/fwlink/?LinkId=2132837'}
+          target={'_blank'}
+          style={{ fontStyle: 'normal', color: 'blue', textDecoration: 'none' }}
+          rel="noreferrer"
+        >
+          {"What's This?"}
+        </a>
+      </p>
     </div>
   );
 };

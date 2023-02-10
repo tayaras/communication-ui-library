@@ -16,6 +16,11 @@ export const convertChatMessage = (
   return {
     ...message,
     clientMessageId: clientMessageId,
-    status
+    status,
+    policyViolation: !!(
+      message.sender?.kind === 'microsoftTeamsUser' &&
+      !!message.editedOn &&
+      message.content?.message === ''
+    )
   };
 };

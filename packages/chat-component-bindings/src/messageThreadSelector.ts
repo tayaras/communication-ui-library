@@ -83,6 +83,7 @@ const convertToUiChatMessage = (
     editedOn: message.editedOn,
     deletedOn: message.deletedOn,
     mine: messageSenderId === userId,
+    policyViolation: message.policyViolation,
     metadata: message.metadata,
     /* @conditional-compile-remove(file-sharing) */
     attachedFilesMetadata: extractAttachedFilesMetadata(message.metadata || {})
@@ -223,6 +224,9 @@ const messagesWithContentOrFileSharingMetadata = (message: ChatMessageWithStatus
     return false;
   }
   if (message.metadata?.['fileSharingMetadata']) {
+    return true;
+  }
+  if (message.policyViolation) {
     return true;
   }
   return !!(message.content && message.content?.message !== '');

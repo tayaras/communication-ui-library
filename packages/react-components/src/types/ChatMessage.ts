@@ -60,6 +60,7 @@ export interface ChatMessage extends MessageCommon {
   status?: MessageStatus;
   attached?: MessageAttachedStatus;
   mine?: boolean;
+  policyViolation?: boolean;
   clientMessageId?: string;
   contentType: MessageContentType;
   /**
