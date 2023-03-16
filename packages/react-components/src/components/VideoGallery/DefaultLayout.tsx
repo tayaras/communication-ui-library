@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Stack } from '@fluentui/react';
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { GridLayout } from '../GridLayout';
 import { isNarrowWidth } from '../utils/responsive';
 /* @conditional-compile-remove(vertical-gallery) */
@@ -68,11 +68,20 @@ export const DefaultLayout = (props: DefaultLayoutProps): JSX.Element => {
     );
   });
 
-  const horizontalGalleryTiles = horizontalGalleryParticipants.map((p) => {
+  const [indexesToRender, setIndexesToRender] = useState<number[]>([0]);
+
+  const updateIndexes = useCallback(
+    (indexes: number[]): void => {
+      setIndexesToRender(indexes);
+    },
+    [setIndexesToRender]
+  );
+
+  const horizontalGalleryTiles = horizontalGalleryParticipants.map((p, i) => {
     return onRenderRemoteParticipant(
       p,
       maxRemoteVideoStreams && maxRemoteVideoStreams >= 0
-        ? p.videoStream?.isAvailable && activeVideoStreams++ < maxRemoteVideoStreams
+        ? p.videoStream?.isAvailable && indexesToRender.includes(i) && activeVideoStreams++ < maxRemoteVideoStreams
         : p.videoStream?.isAvailable
     );
   });
@@ -100,6 +109,7 @@ export const DefaultLayout = (props: DefaultLayoutProps): JSX.Element => {
         onChildrenPerPageChange={(n: number) => {
           childrenPerPage.current = n;
         }}
+        onFetchTilesToRender={updateIndexes}
       />
     );
   }, [
@@ -107,6 +117,7 @@ export const DefaultLayout = (props: DefaultLayoutProps): JSX.Element => {
     /* @conditional-compile-remove(vertical-gallery) */ isShort,
     horizontalGalleryTiles,
     styles?.horizontalGallery,
+    updateIndexes,
     /* @conditional-compile-remove(vertical-gallery) */ overflowGalleryLayout,
     /* @conditional-compile-remove(vertical-gallery) */ styles?.verticalGallery
   ]);

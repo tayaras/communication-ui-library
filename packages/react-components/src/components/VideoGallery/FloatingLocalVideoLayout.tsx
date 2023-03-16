@@ -3,7 +3,7 @@
 
 import { LayerHost, mergeStyles, Stack } from '@fluentui/react';
 import { useId } from '@fluentui/react-hooks';
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { useTheme } from '../../theming';
 import { GridLayout } from '../GridLayout';
 import { isNarrowWidth } from '../utils/responsive';
@@ -100,11 +100,20 @@ export const FloatingLocalVideoLayout = (props: FloatingLocalVideoLayoutProps): 
     gridTiles.push(localVideoComponent);
   }
 
-  const horizontalGalleryTiles = horizontalGalleryParticipants.map((p) => {
+  const [indexesToRender, setIndexesToRender] = useState<number[]>([0]);
+
+  const updateIndexes = useCallback(
+    (indexes: number[]): void => {
+      setIndexesToRender(indexes);
+    },
+    [setIndexesToRender]
+  );
+
+  const horizontalGalleryTiles = horizontalGalleryParticipants.map((p, i) => {
     return onRenderRemoteParticipant(
       p,
       maxRemoteVideoStreams && maxRemoteVideoStreams >= 0
-        ? p.videoStream?.isAvailable && activeVideoStreams++ < maxRemoteVideoStreams
+        ? p.videoStream?.isAvailable && indexesToRender.includes(i) && activeVideoStreams++ < maxRemoteVideoStreams
         : p.videoStream?.isAvailable
     );
   });
@@ -166,6 +175,7 @@ export const FloatingLocalVideoLayout = (props: FloatingLocalVideoLayoutProps): 
       <OverflowGallery
         /* @conditional-compile-remove(vertical-gallery) */
         isShort={isShort}
+        onFetchTilesToRender={updateIndexes}
         isNarrow={isNarrow}
         shouldFloatLocalVideo={true}
         overflowGalleryElements={horizontalGalleryTiles}
@@ -184,6 +194,7 @@ export const FloatingLocalVideoLayout = (props: FloatingLocalVideoLayoutProps): 
     /* @conditional-compile-remove(vertical-gallery) */ isShort,
     horizontalGalleryTiles,
     styles?.horizontalGallery,
+    updateIndexes,
     /* @conditional-compile-remove(vertical-gallery) */ overflowGalleryLayout,
     /* @conditional-compile-remove(vertical-gallery) */ styles?.verticalGallery
   ]);
