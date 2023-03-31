@@ -9,7 +9,8 @@ import {
   VideoStreamOptions,
   OnRenderAvatarCallback,
   CustomAvatarOptions,
-  Announcer
+  Announcer,
+  VideoGalleryRemoteParticipant
 } from '@internal/react-components';
 /* @conditional-compile-remove(vertical-gallery) */
 import { _useContainerWidth, _useContainerHeight } from '@internal/react-components';
@@ -118,10 +119,17 @@ export const MediaGallery = (props: MediaGalleryProps): JSX.Element => {
     [containerWidth, containerHeight]
   );
 
+  const remoteParticipants: VideoGalleryRemoteParticipant[] = [...Array(10).keys()].map((i) => ({
+    userId: `${i}`,
+    displayName: `${i}`,
+    state: 'Connected'
+  }));
+
   const VideoGalleryMemoized = useMemo(() => {
     return (
       <VideoGallery
         {...videoGalleryProps}
+        remoteParticipants={remoteParticipants}
         localVideoViewOptions={localVideoViewOptions}
         remoteVideoViewOptions={remoteVideoViewOptions}
         styles={VideoGalleryStyles}
