@@ -243,7 +243,11 @@ export type {
   VideoStreamOptions,
   VideoTileProps,
   VideoTileStylesProps,
-  ViewScalingMode
+  ViewScalingMode,
+  AtMentionDisplayOptions,
+  AtMentionLookupOptions,
+  AtMentionFlyoutProps,
+  AtMentionSuggestion
 } from '../../react-components/src';
 /* @conditional-compile-remove(rooms) */
 export type { Role } from '../../react-components/src';

@@ -22,6 +22,7 @@ import { _FileUploadCards } from './FileUploadCards';
 /* @conditional-compile-remove(file-sharing) */
 import { fileUploadCardsStyles } from './styles/SendBox.styles';
 import { SendBoxErrorBarError } from './SendBoxErrorBar';
+import { AtMentionLookupOptions, AtMentionSuggestion } from './AtMentionFlyout';
 
 const EMPTY_MESSAGE_REGEX = /^\s*$/;
 const MAXIMUM_LENGTH_OF_MESSAGE = 8000;
@@ -140,6 +141,11 @@ export interface SendBoxProps {
    */
   onSendMessage?: (content: string) => Promise<void>;
   /**
+   * Optional props needed to lookup suggestions in the @mention scenario.
+   */
+  atMentionLookupOptions?: AtMentionLookupOptions;
+
+  /**
    * Optional callback called when user is typing
    */
   onTyping?: () => Promise<void>;
@@ -217,7 +223,8 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
     onRenderIcon,
     onRenderSystemMessage,
     styles,
-    autoFocus
+    autoFocus,
+    atMentionLookupOptions
   } = props;
   const theme = useTheme();
   const localeStrings = useLocale().strings.sendBox;
@@ -343,6 +350,13 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
     );
   }, [activeFileUploads, props, localeStrings]);
 
+  const handleOnSuggestionSelected = (suggestion: AtMentionSuggestion) => {
+    const onSuggestionSelected = atMentionLookupOptions?.onSuggestionSelected;
+    onSuggestionSelected && onSuggestionSelected(suggestion);
+    const trigger = atMentionLookupOptions?.trigger || '';
+    setTextValue(trigger + suggestion.displayName);
+  };
+
   return (
     <Stack className={mergeStyles(sendBoxWrapperStyles)}>
       <SendBoxErrors {...sendBoxErrorsProps} />
@@ -379,6 +393,10 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
           styles={mergedStyles}
           supportNewline={supportNewline}
           maxLength={MAXIMUM_LENGTH_OF_MESSAGE}
+          atMentionLookupOptions={{
+            ...atMentionLookupOptions,
+            onSuggestionSelected: (suggestion) => handleOnSuggestionSelected(suggestion)
+          }}
         >
           <VoiceOverButton
             onRenderIcon={onRenderSendIcon}
@@ -417,7 +435,7 @@ const hasIncompleteFileUploads = (props: SendBoxProps): boolean => {
 const hasFile = (props: SendBoxProps): boolean => {
   const activeFileUploads = activeFileUploadsTrampoline(props);
   return !!activeFileUploads?.find((file) => !file.error);
-  return false;
+  // return false;
 };
 
 const sanitizeText = (message: string): string => {
@@ -431,5 +449,5 @@ const sanitizeText = (message: string): string => {
 const activeFileUploadsTrampoline = (props: SendBoxProps): ActiveFileUpload[] | undefined => {
   /* @conditional-compile-remove(file-sharing) */
   return props.activeFileUploads;
-  return [];
+  // return [];
 };

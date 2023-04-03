@@ -21,6 +21,7 @@ import { chatMessageActionMenuProps } from './ChatMessageActionMenu';
 import { OnRenderAvatarCallback } from '../../types';
 import { _FileDownloadCards, FileDownloadHandler } from '../FileDownloadCards';
 import { ComponentLocale, useLocale } from '../../localization';
+import { AtMentionDisplayOptions } from '../AtMentionFlyout';
 
 type ChatMessageComponentAsMessageBubbleProps = {
   message: ChatMessage;
@@ -62,6 +63,7 @@ type ChatMessageComponentAsMessageBubbleProps = {
    * @beta
    */
   onDisplayDateTimeString?: (messageDate: Date) => string;
+  atMentionDisplayOptions?: AtMentionDisplayOptions;
 };
 
 const generateDefaultTimestamp = (
@@ -88,8 +90,6 @@ const generateCustomizedTimestamp = (
     : locale.onDisplayDateTimeString
     ? locale.onDisplayDateTimeString(createdOn)
     : '';
-
-  return '';
 };
 /** @private */
 const MessageBubble = (props: ChatMessageComponentAsMessageBubbleProps): JSX.Element => {
@@ -111,7 +111,8 @@ const MessageBubble = (props: ChatMessageComponentAsMessageBubbleProps): JSX.Ele
     onRenderAvatar,
     showMessageStatus,
     messageStatus,
-    fileDownloadHandler
+    fileDownloadHandler,
+    atMentionDisplayOptions
   } = props;
 
   const defaultTimeStamp = message.createdOn
@@ -190,6 +191,14 @@ const MessageBubble = (props: ChatMessageComponentAsMessageBubbleProps): JSX.Ele
         })
     : undefined;
 
+  // const handleOnMentionSuggestionClicked = (suggestion: AtMentionSuggestion, target: Target) => {
+  //   atMentionDisplayOptions?.onSuggestionClicked
+  //     ? atMentionDisplayOptions?.onSuggestionClicked(suggestion, target)
+  //     : (id, ref) => {
+  //         setAtMentionSuggestionTarget(ref);
+  //       };
+  // };
+
   const chatMessage = (
     <>
       <div ref={messageRef}>
@@ -203,6 +212,10 @@ const MessageBubble = (props: ChatMessageComponentAsMessageBubbleProps): JSX.Ele
                 message={message}
                 liveAuthorIntro={strings.liveAuthorIntro}
                 messageContentAriaText={messageContentAriaText}
+                atMentionDisplayOptions={{
+                  ...atMentionDisplayOptions
+                  // onSuggestionClicked: handleOnMentionSuggestionClicked
+                }}
               />
               {props.onRenderFileDownloads
                 ? props.onRenderFileDownloads(userId, message)

@@ -47,6 +47,8 @@ import { useSelector } from './hooks/useSelector';
 import { FileDownloadErrorBar } from './FileDownloadErrorBar';
 /* @conditional-compile-remove(file-sharing) */
 import { _FileDownloadCards } from '@internal/react-components';
+import { AtMentionLookupOptions, AtMentionSuggestion } from '@internal/react-components/src/components/AtMentionFlyout';
+import { AtMentionDisplayOptions } from '@internal/react-components';
 
 /**
  * @private
@@ -206,6 +208,50 @@ export const ChatScreen = (props: ChatScreenProps): JSX.Element => {
       />
     );
   }, [fileSharing?.accept, fileSharing?.multiple, fileSharing?.uploadHandler, fileUploadButtonOnChange]);
+
+  const atMentionLookupOptions: AtMentionLookupOptions = {
+    trigger: '@',
+    isMobile: formFactor === 'mobile',
+    onSuggestionSelected: (suggestion: AtMentionSuggestion) => {
+      console.log(suggestion);
+    },
+    onQueryUpdated: async (query: string) => {
+      console.log(query);
+      const fakeData: AtMentionSuggestion[] = [
+        {
+          userId: '1',
+          suggestionType: 'person',
+          displayName: '1'
+        },
+        {
+          userId: '2',
+          suggestionType: 'person',
+          displayName: '2'
+        }
+      ];
+      return fakeData;
+    },
+    suggestionItemRenderer: (suggestion: AtMentionSuggestion) => {
+      return <div>{suggestion.displayName}</div>;
+    }
+  };
+
+  const handleOnClick = (suggestion: AtMentionSuggestion) => {
+    console.log('user clicked: ', suggestion.displayName);
+  };
+  const atMentionDisplayOptions: AtMentionDisplayOptions = {
+    atMentionSuggestionRenderer: (suggestion: AtMentionSuggestion) => {
+      return (
+        <span
+          {...suggestion}
+          // ref={atMentionSuggestionRef}
+          onClick={() => handleOnClick(suggestion)}
+        >
+          {suggestion.displayName}
+        </span>
+      );
+    }
+  };
   return (
     <Stack className={chatContainer} grow>
       {options?.topic !== false && <ChatHeader {...headerProps} />}
@@ -229,6 +275,8 @@ export const ChatScreen = (props: ChatScreenProps): JSX.Element => {
             onRenderFileDownloads={onRenderFileDownloads}
             numberOfChatMessagesToReload={defaultNumberOfChatMessagesToReload}
             styles={messageThreadStyles}
+            atMentionLookupOptions={atMentionLookupOptions}
+            atMentionDisplayOptions={atMentionDisplayOptions}
           />
           <Stack className={mergeStyles(sendboxContainerStyles)}>
             <div className={mergeStyles(typingIndicatorContainerStyles)}>
@@ -253,6 +301,7 @@ export const ChatScreen = (props: ChatScreenProps): JSX.Element => {
                   activeFileUploads={useSelector(fileUploadsSelector).files}
                   /* @conditional-compile-remove(file-sharing) */
                   onCancelFileUpload={adapter.cancelFileUpload}
+                  atMentionLookupOptions={atMentionLookupOptions}
                 />
               </Stack>
               {formFactor !== 'mobile' && <AttachFileButton />}

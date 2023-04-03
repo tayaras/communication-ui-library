@@ -62,6 +62,7 @@ import { getParticipantsWhoHaveReadMessage } from './utils/getParticipantsWhoHav
 /* @conditional-compile-remove(file-sharing) */
 import { FileDownloadHandler, FileMetadata } from './FileDownloadCards';
 import { useTheme } from '../theming';
+import { AtMentionDisplayOptions, AtMentionLookupOptions } from './AtMentionFlyout';
 
 const isMessageSame = (first: ChatMessage, second: ChatMessage): boolean => {
   return (
@@ -636,6 +637,14 @@ export type MessageThreadProps = {
    * @beta
    */
   onDisplayDateTimeString?: (messageDate: Date) => string;
+  /**
+   * Optional props needed to lookup suggestions in the @mention scenario.
+   */
+  atMentionLookupOptions?: AtMentionLookupOptions;
+  /**
+   * Optional props needed to display suggestions in the @mention scenario.
+   */
+  atMentionDisplayOptions?: AtMentionDisplayOptions;
 };
 
 /**
@@ -729,7 +738,8 @@ export const MessageThread = (props: MessageThreadProps): JSX.Element => {
     onDeleteMessage,
     onSendMessage,
     /* @conditional-compile-remove(date-time-customization) */
-    onDisplayDateTimeString
+    onDisplayDateTimeString,
+    atMentionDisplayOptions
   } = props;
   const onRenderFileDownloads = onRenderFileDownloadsTrampoline(props);
 
@@ -997,6 +1007,7 @@ export const MessageThread = (props: MessageThreadProps): JSX.Element => {
         return (
           <ChatMessageComponent
             {...messageProps}
+            atMentionDisplayOptions={atMentionDisplayOptions}
             onRenderFileDownloads={onRenderFileDownloads}
             /* @conditional-compile-remove(file-sharing) */
             strings={strings}

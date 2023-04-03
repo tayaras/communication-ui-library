@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import React, { useState, ReactNode, FormEvent, useCallback } from 'react';
+import React, { useState, ReactNode, FormEvent, useCallback, useRef } from 'react';
 import {
   Stack,
   TextField,
@@ -28,6 +28,7 @@ import {
 
 import { isDarkThemed } from '../theming/themeUtils';
 import { useTheme } from '../theming';
+import { AtMentionFlyout, AtMentionLookupOptions } from './AtMentionFlyout';
 
 /**
  * @private
@@ -43,6 +44,9 @@ export interface InputBoxStylesProps extends BaseCustomStyles {
   textFieldContainer?: IStyle;
 }
 
+/**
+ * @private
+ */
 type InputBoxComponentProps = {
   children: ReactNode;
   /**
@@ -64,6 +68,7 @@ type InputBoxComponentProps = {
   disabled?: boolean;
   styles?: InputBoxStylesProps;
   autoFocus?: 'sendBoxTextField';
+  atMentionLookupOptions?: AtMentionLookupOptions;
 };
 
 /**
@@ -84,7 +89,8 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     inputClassName,
     errorMessage,
     disabled,
-    children
+    children,
+    atMentionLookupOptions
   } = props;
 
   const mergedRootStyle = mergeStyles(inputBoxWrapperStyle, styles?.root);
@@ -99,6 +105,10 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     fieldGroup: styles?.textField,
     errorMessage: styles?.systemMessage
   });
+
+  const inputBoxRef = useRef(null);
+  const [isMentioning, setIsMentioning] = useState(false);
+  const [atMentionQuery, setAtMentionQuery] = useState<string | undefined>(undefined);
 
   const onTexFieldKeyDown = useCallback(
     (ev: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -115,8 +125,31 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     [onEnterKeyDown, onKeyDown, supportNewline]
   );
 
+  const handleOnChange = (
+    event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
+    newValue?: string | undefined
+  ): void => {
+    // !isMentioning && last char is trigger
+    if (!isMentioning) {
+      setIsMentioning(true);
+      setAtMentionQuery(newValue);
+    } else if (isMentioning) {
+      setIsMentioning(false);
+      setAtMentionQuery(undefined);
+    }
+    onChange && onChange(event, newValue);
+  };
+
   return (
     <Stack className={mergedRootStyle}>
+      {isMentioning && (
+        <AtMentionFlyout
+          {...atMentionLookupOptions}
+          query={atMentionQuery}
+          target={inputBoxRef}
+          onDismiss={() => setIsMentioning(false)}
+        />
+      )}
       <div className={mergedTextContainerStyle}>
         <TextField
           autoFocus={props.autoFocus === 'sendBoxTextField'}
@@ -130,12 +163,13 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
           inputClassName={mergedTextFiledStyle}
           placeholder={placeholderText}
           value={textValue}
-          onChange={onChange}
+          onChange={handleOnChange}
           autoComplete="off"
           onKeyDown={onTexFieldKeyDown}
           styles={mergedTextFieldStyle}
           disabled={disabled}
           errorMessage={errorMessage}
+          elementRef={inputBoxRef}
         />
         <Stack
           horizontal

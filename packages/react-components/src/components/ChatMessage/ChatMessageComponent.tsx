@@ -9,6 +9,7 @@ import { MessageThreadStrings } from '../MessageThread';
 import { ChatMessage, OnRenderAvatarCallback } from '../../types';
 import { ChatMessageComponentAsMessageBubble } from './ChatMessageComponentAsMessageBubble';
 import { FileDownloadHandler, FileMetadata } from '../FileDownloadCards';
+import { AtMentionDisplayOptions } from '../AtMentionFlyout';
 
 type ChatMessageComponentProps = {
   message: ChatMessage;
@@ -70,6 +71,7 @@ type ChatMessageComponentProps = {
    * @beta
    */
   onDisplayDateTimeString?: (messageDate: Date) => string;
+  atMentionDisplayOptions?: AtMentionDisplayOptions;
 };
 
 /**
@@ -125,6 +127,7 @@ export const ChatMessageComponent = (props: ChatMessageComponentProps): JSX.Elem
         /* @conditional-compile-remove(date-time-customization) */
         onDisplayDateTimeString={props.onDisplayDateTimeString}
         strings={props.strings}
+        atMentionDisplayOptions={props.atMentionDisplayOptions}
       />
     );
   }

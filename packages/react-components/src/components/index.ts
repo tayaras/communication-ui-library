@@ -11,7 +11,15 @@ export { GridLayout } from './GridLayout';
 export type { GridLayoutProps, GridLayoutStyles } from './GridLayout';
 
 export { SendBox } from './SendBox';
+export { AtMentionFlyout } from './AtMentionFlyout';
+
 export type { SendBoxProps, SendBoxStrings, SendBoxStylesProps } from './SendBox';
+export type {
+  AtMentionFlyoutProps,
+  AtMentionDisplayOptions,
+  AtMentionLookupOptions,
+  AtMentionSuggestion
+} from './AtMentionFlyout';
 /* @conditional-compile-remove(file-sharing) */
 export type { ActiveFileUpload } from './SendBox';
 
