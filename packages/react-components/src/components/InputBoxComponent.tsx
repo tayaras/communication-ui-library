@@ -28,7 +28,7 @@ import {
 
 import { isDarkThemed } from '../theming/themeUtils';
 import { useTheme } from '../theming';
-import { AtMentionFlyout, AtMentionLookupOptions } from './AtMentionFlyout';
+import { AtMentionFlyout, AtMentionLookupOptions, AtMentionSuggestion } from './AtMentionFlyout';
 
 /**
  * @private
@@ -124,6 +124,12 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     },
     [onEnterKeyDown, onKeyDown, supportNewline]
   );
+
+  // const handleOnSuggestionSelected = (suggestion: AtMentionSuggestion) => {
+  //   const onSuggestionSelected = atMentionLookupOptions?.onSuggestionSelected;
+  //   onSuggestionSelected && onSuggestionSelected(suggestion);
+  //   const trigger = atMentionLookupOptions?.trigger || '';
+  // };
 
   const handleOnChange = (
     event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
