@@ -12,10 +12,11 @@ import {
   toFlatCommunicationIdentifier,
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
-import { Callout, ContextualMenu, Modal, PrimaryButton, Spinner, Stack, Text } from '@fluentui/react';
+import { Callout, ContextualMenu, FocusTrapCallout, Modal, PrimaryButton, Spinner, Stack, Text } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
+import { CallAdapter } from '@azure/communication-react';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -64,6 +65,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         Draggable Modal Click to Call
       </PrimaryButton>
       <PrimaryButton
+        id="callout-button"
         onClick={() => {
           setClick2CallExp('callout');
         }}
@@ -100,18 +102,28 @@ const CalloutComposite = (props: {
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
   console.log('adapterArgs', adapterArgs);
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs });
+  const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
+    adapter.on('callEnded', () => {
+      onDismiss();
+    });
+    adapter.joinCall();
+    return new Promise((resolve, reject) => resolve(adapter));
+  };
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
   }
   return (
-    <Callout onDismiss={onDismiss}>
-      <Stack>
+    <FocusTrapCallout target={`#callout-button`} onDismiss={onDismiss}>
+      <Stack style={{ height: '30rem' }}>
         <Text>Contoso's Call experience</Text>
-        <CallComposite adapter={adapter} />
+        <CallComposite
+          options={{ callControls: { peopleButton: false, moreButton: false, screenShareButton: false } }}
+          adapter={adapter}
+        />
       </Stack>
-    </Callout>
+    </FocusTrapCallout>
   );
 };
 
@@ -132,7 +144,7 @@ const ModalDragComposite = (props: {
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
   console.log('adapterArgs', adapterArgs);
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs });
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' });
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
@@ -167,7 +179,7 @@ const ModalNoDragComposite = (props: {
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
   console.log('adapterArgs', adapterArgs);
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs });
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' });
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
