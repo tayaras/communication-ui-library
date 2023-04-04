@@ -9,7 +9,7 @@ import { fromFlatCommunicationIdentifier } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
 import { MicrosoftTeamsUserIdentifier } from '@azure/communication-common';
 import { setLogLevel } from '@azure/logger';
-import { initializeIcons, Spinner } from '@fluentui/react';
+import { initializeIcons, PrimaryButton, Spinner, Stack } from '@fluentui/react';
 import { CallAdapterLocator } from '@azure/communication-react';
 import React, { useEffect, useState } from 'react';
 import {
@@ -35,6 +35,7 @@ import { CallScreen } from './views/CallScreen';
 import { HomeScreen } from './views/HomeScreen';
 import { PageOpenInAnotherTab } from './views/PageOpenInAnotherTab';
 import { UnsupportedBrowserPage } from './views/UnsupportedBrowserPage';
+import { ClickToCallPage } from './views/ClickToCall';
 
 setLogLevel('warning');
 
@@ -44,7 +45,7 @@ console.log(
 
 initializeIcons();
 
-type AppPages = 'home' | 'call';
+type AppPages = 'home' | 'call' | 'click-to-call';
 
 const App = (): JSX.Element => {
   const [page, setPage] = useState<AppPages>('home');
@@ -110,61 +111,70 @@ const App = (): JSX.Element => {
         !!getTeamsLinkFromUrl() ||
         /* @conditional-compile-remove(rooms) */ !!getRoomIdFromUrl();
       return (
-        <HomeScreen
-          joiningExistingCall={joiningExistingCall}
-          startCallHandler={async (callDetails) => {
-            setDisplayName(callDetails.displayName);
-            /* @conditional-compile-remove(PSTN-calls) */
-            setAlternateCallerId(callDetails.alternateCallerId);
-            let callLocator: CallAdapterLocator | undefined =
-              callDetails.callLocator || getTeamsLinkFromUrl() || getGroupIdFromUrl();
+        <Stack>
+          <HomeScreen
+            joiningExistingCall={joiningExistingCall}
+            startCallHandler={async (callDetails) => {
+              setDisplayName(callDetails.displayName);
+              /* @conditional-compile-remove(PSTN-calls) */
+              setAlternateCallerId(callDetails.alternateCallerId);
+              let callLocator: CallAdapterLocator | undefined =
+                callDetails.callLocator || getTeamsLinkFromUrl() || getGroupIdFromUrl();
 
-            /* @conditional-compile-remove(rooms) */
-            callLocator = callLocator || getRoomIdFromUrl();
+              /* @conditional-compile-remove(rooms) */
+              callLocator = callLocator || getRoomIdFromUrl();
 
-            /* @conditional-compile-remove(PSTN-calls) */
-            callLocator = callLocator || getOutboundParticipants(callDetails.outboundParticipants);
+              /* @conditional-compile-remove(PSTN-calls) */
+              callLocator = callLocator || getOutboundParticipants(callDetails.outboundParticipants);
 
-            callLocator = callLocator || createGroupId();
+              callLocator = callLocator || createGroupId();
 
-            /* @conditional-compile-remove(rooms) */
-            // There is an API call involved with creating a room so lets only create one if we know we have to
-            if (callDetails.option === 'StartRooms') {
-              let roomId = '';
-              try {
-                roomId = await createRoom();
-              } catch (e) {
-                console.log(e);
+              /* @conditional-compile-remove(rooms) */
+              // There is an API call involved with creating a room so lets only create one if we know we have to
+              if (callDetails.option === 'StartRooms') {
+                let roomId = '';
+                try {
+                  roomId = await createRoom();
+                } catch (e) {
+                  console.log(e);
+                }
+
+                callLocator = { roomId: roomId };
               }
 
-              callLocator = { roomId: roomId };
-            }
-
-            /* @conditional-compile-remove(rooms) */
-            if ('roomId' in callLocator) {
-              if (userId && 'communicationUserId' in userId) {
-                setRole(callDetails.role as Role);
-                await addUserToRoom(userId.communicationUserId, callLocator.roomId, callDetails.role as Role);
-              } else {
-                throw 'Invalid userId!';
+              /* @conditional-compile-remove(rooms) */
+              if ('roomId' in callLocator) {
+                if (userId && 'communicationUserId' in userId) {
+                  setRole(callDetails.role as Role);
+                  await addUserToRoom(userId.communicationUserId, callLocator.roomId, callDetails.role as Role);
+                } else {
+                  throw 'Invalid userId!';
+                }
               }
-            }
-            setCallLocator(callLocator);
+              setCallLocator(callLocator);
 
-            // Update window URL to have a joinable link
-            if (!joiningExistingCall) {
-              window.history.pushState({}, document.title, window.location.origin + getJoinParams(callLocator));
-            }
-            /* @conditional-compile-remove(teams-identity-support) */
-            setIsTeamsCall(!!callDetails.teamsToken);
-            /* @conditional-compile-remove(teams-identity-support) */
-            callDetails.teamsToken && setToken(callDetails.teamsToken);
-            /* @conditional-compile-remove(teams-identity-support) */
-            callDetails.teamsId &&
-              setUserId(fromFlatCommunicationIdentifier(callDetails.teamsId) as MicrosoftTeamsUserIdentifier);
-            setPage('call');
-          }}
-        />
+              // Update window URL to have a joinable link
+              if (!joiningExistingCall) {
+                window.history.pushState({}, document.title, window.location.origin + getJoinParams(callLocator));
+              }
+              /* @conditional-compile-remove(teams-identity-support) */
+              setIsTeamsCall(!!callDetails.teamsToken);
+              /* @conditional-compile-remove(teams-identity-support) */
+              callDetails.teamsToken && setToken(callDetails.teamsToken);
+              /* @conditional-compile-remove(teams-identity-support) */
+              callDetails.teamsId &&
+                setUserId(fromFlatCommunicationIdentifier(callDetails.teamsId) as MicrosoftTeamsUserIdentifier);
+              setPage('call');
+            }}
+          />
+          <PrimaryButton
+            onClick={() => {
+              setPage('click-to-call');
+            }}
+          >
+            Go to click to call
+          </PrimaryButton>
+        </Stack>
       );
     }
 
@@ -206,6 +216,13 @@ const App = (): JSX.Element => {
           />
         </React.StrictMode>
       );
+    }
+    case 'click-to-call': {
+      if (!token || !userId) {
+        document.title = `credentials - ${WEB_APP_TITLE}`;
+        return <Spinner label={'Getting user credentials from server'} ariaLive="assertive" labelPosition="top" />;
+      }
+      return <ClickToCallPage token={token} userId={userId} displayName={displayName} callLocator={callLocator} />;
     }
     default:
       document.title = `error - ${WEB_APP_TITLE}`;
