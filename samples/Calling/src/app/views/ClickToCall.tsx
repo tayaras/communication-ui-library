@@ -23,10 +23,11 @@ import {
   TextField
 } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import React, { useMemo, useState } from 'react';
+import React, { ReactNode, ReactPortal, useEffect, useMemo, useRef, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { CallAdapter } from '@azure/communication-react';
 import { outboundTextField } from '../styles/HomeScreen.styles';
+import { createPortal } from 'react-dom';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -44,7 +45,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(userId), token);
   }, [token, userId]);
 
-  const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal'>();
+  const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'newWindow'>();
 
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
@@ -86,6 +87,13 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         >
           Callout Click to Call
         </PrimaryButton>
+        <PrimaryButton
+          onClick={() => {
+            setClick2CallExp('newWindow');
+          }}
+        >
+          newWindow Click to Call
+        </PrimaryButton>
         {click2CallExp === 'modal' && (
           <ModalNoDragComposite
             adapterArgs={adapterParams}
@@ -106,6 +114,13 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           <CalloutComposite
             adapterArgs={adapterParams}
             onDismiss={() => setClick2CallExp(undefined)}
+            alternateCallerId={alternateCallerId}
+            participants={participantIds}
+          />
+        )}
+        {click2CallExp === 'newWindow' && (
+          <NewWindowComposite
+            adapterArgs={adapterParams}
             alternateCallerId={alternateCallerId}
             participants={participantIds}
           />
@@ -280,4 +295,70 @@ const ModalNoDragComposite = (props: {
       </Modal>
     </Stack>
   );
+};
+
+const NewWindowComposite = (props: {
+  adapterArgs: {
+    userId: CommunicationUserIdentifier;
+    displayName: string;
+    credential: AzureCommunicationTokenCredential;
+    token: string;
+    locator: CallAdapterLocator;
+  };
+  participants?: string[];
+  alternateCallerId?: string;
+}): JSX.Element => {
+  const { adapterArgs, participants, alternateCallerId } = props;
+
+  const [container, setContainer] = useState<HTMLElement | undefined>(undefined);
+  const newWindow = useRef<Window | null>(null);
+
+  const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
+    adapter.joinCall();
+    return new Promise((resolve, reject) => resolve(adapter));
+  };
+
+  const adapter = useAzureCommunicationCallAdapter(
+    {
+      ...adapterArgs,
+      displayName: 'test'
+    },
+    afterCreate
+  );
+
+  const renderComposite = (): JSX.Element => {
+    if (!adapter) {
+      document.title = `credentials - ${WEB_APP_TITLE}`;
+      return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
+    }
+    return (
+      <Stack>
+        <CallComposite
+          adapter={adapter}
+          options={{
+            callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+          }}
+        />
+      </Stack>
+    );
+  };
+
+  useEffect(() => {
+    setContainer(document.createElement('div'));
+  }, []);
+
+  useEffect(() => {
+    if (container) {
+      newWindow.current = window.open('', '', 'width=600,height=400,left=200,top=200');
+
+      newWindow.current?.document.body.appendChild(container);
+
+      const currentWindow = newWindow.current;
+
+      return () => currentWindow?.close();
+    }
+    return;
+  }, [container]);
+
+  return (container && createPortal(renderComposite(), container)) ?? <>Oooops</>;
 };
