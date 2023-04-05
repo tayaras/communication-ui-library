@@ -23,7 +23,7 @@ import {
   TextField
 } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import React, { ReactNode, ReactPortal, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { CallAdapter } from '@azure/communication-react';
 import { outboundTextField } from '../styles/HomeScreen.styles';
@@ -45,7 +45,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(userId), token);
   }, [token, userId]);
 
-  const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'newWindow'>();
+  const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'reactPortal'>();
 
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
@@ -57,9 +57,10 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
       displayName,
       credential,
       token,
-      locator: callLocator
+      locator: participantIds ? { participantIds } : callLocator,
+      alternateCallerId
     };
-  }, [userId, displayName, credential, token, callLocator]);
+  }, [userId, displayName, credential, token, callLocator, alternateCallerId, participantIds]);
 
   return (
     <Stack horizontal tokens={{ childrenGap: '1.5rem' }}>
@@ -89,16 +90,15 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         </PrimaryButton>
         <PrimaryButton
           onClick={() => {
-            setClick2CallExp('newWindow');
+            setClick2CallExp('reactPortal');
           }}
         >
-          newWindow Click to Call
+          React portal Click to Call
         </PrimaryButton>
         {click2CallExp === 'modal' && (
           <ModalNoDragComposite
             adapterArgs={adapterParams}
             onDismiss={() => setClick2CallExp(undefined)}
-            alternateCallerId={alternateCallerId}
             participants={participantIds}
           />
         )}
@@ -106,7 +106,6 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           <ModalDragComposite
             adapterArgs={adapterParams}
             onDismiss={() => setClick2CallExp(undefined)}
-            alternateCallerId={alternateCallerId}
             participants={participantIds}
           />
         )}
@@ -114,16 +113,11 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           <CalloutComposite
             adapterArgs={adapterParams}
             onDismiss={() => setClick2CallExp(undefined)}
-            alternateCallerId={alternateCallerId}
             participants={participantIds}
           />
         )}
-        {click2CallExp === 'newWindow' && (
-          <NewWindowComposite
-            adapterArgs={adapterParams}
-            alternateCallerId={alternateCallerId}
-            participants={participantIds}
-          />
+        {click2CallExp === 'reactPortal' && (
+          <ReactPortalComposite adapterArgs={adapterParams} participants={participantIds} />
         )}
       </Stack>
       <Stack tokens={{ childrenGap: '1.5rem' }}>
@@ -156,10 +150,10 @@ const CalloutComposite = (props: {
     credential: AzureCommunicationTokenCredential;
     token: string;
     locator: CallAdapterLocator;
+    alternateCallerId?: string;
   };
   onDismiss: () => void;
   participants?: string[];
-  alternateCallerId?: string;
 }): JSX.Element => {
   const { adapterArgs, onDismiss, participants } = props;
 
@@ -203,10 +197,10 @@ const ModalDragComposite = (props: {
     credential: AzureCommunicationTokenCredential;
     token: string;
     locator: CallAdapterLocator;
+    alternateCallerId?: string;
   };
   onDismiss: () => void;
   participants?: string[];
-  alternateCallerId?: string;
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
 
@@ -254,13 +248,13 @@ const ModalNoDragComposite = (props: {
     credential: AzureCommunicationTokenCredential;
     token: string;
     locator: CallAdapterLocator;
+    alternateCallerId?: string;
   };
   onDismiss: () => void;
   participants?: string[];
-  alternateCallerId?: string;
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
-
+  console.log('adapterArgs', adapterArgs);
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       onDismiss();
@@ -297,23 +291,26 @@ const ModalNoDragComposite = (props: {
   );
 };
 
-const NewWindowComposite = (props: {
+const ReactPortalComposite = (props: {
   adapterArgs: {
     userId: CommunicationUserIdentifier;
     displayName: string;
     credential: AzureCommunicationTokenCredential;
     token: string;
     locator: CallAdapterLocator;
+    alternateCallerId?: string;
   };
   participants?: string[];
-  alternateCallerId?: string;
 }): JSX.Element => {
-  const { adapterArgs, participants, alternateCallerId } = props;
+  const { adapterArgs } = props;
 
   const [container, setContainer] = useState<HTMLElement | undefined>(undefined);
   const newWindow = useRef<Window | null>(null);
 
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
+    adapter.on('callEnded', () => {
+      newWindow.current?.close();
+    });
     adapter.joinCall();
     return new Promise((resolve, reject) => resolve(adapter));
   };

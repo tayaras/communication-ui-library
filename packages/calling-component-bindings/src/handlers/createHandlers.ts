@@ -50,9 +50,10 @@ export const createDefaultCallingHandlers = memoizeOne(
       ...createDefaultCommonCallingHandlers(callClient, deviceManager, call),
       // FIXME: onStartCall API should use string, not the underlying SDK types.
       onStartCall: (participants: CommunicationIdentifier[], options?: StartCallOptions): Call | undefined => {
-        if (!isACSCallParticipants(participants)) {
-          throw new Error('TeamsUserIdentifier in Teams call is not supported!');
-        }
+        // if (!isACSCallParticipants(participants)) {
+        //   throw new Error('TeamsUserIdentifier in Teams call is not supported!');
+        // }
+        console.log('onStartCall', participants, options);
         return callAgent ? callAgent.startCall(participants, options) : undefined;
       },
       /* @conditional-compile-remove(PSTN-calls) */
