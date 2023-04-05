@@ -12,11 +12,21 @@ import {
   toFlatCommunicationIdentifier,
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
-import { ContextualMenu, FocusTrapCallout, Modal, PrimaryButton, Spinner, Stack, Text } from '@fluentui/react';
+import {
+  ContextualMenu,
+  FocusTrapCallout,
+  Modal,
+  PrimaryButton,
+  Spinner,
+  Stack,
+  Text,
+  TextField
+} from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
 import React, { useMemo, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { CallAdapter } from '@azure/communication-react';
+import { outboundTextField } from '../styles/HomeScreen.styles';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -36,6 +46,9 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
 
   const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal'>();
 
+  const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
+  const [participantIds, setParticipantIds] = useState<string[]>();
+
   // we also want to make this memoized version of the args for the new window.
   const adapterParams = useMemo(() => {
     return {
@@ -48,39 +61,70 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   }, [userId, displayName, credential, token, callLocator]);
 
   return (
-    <Stack tokens={{ childrenGap: '1.5rem' }}>
-      <Text>Click 2 Call</Text>
-      <PrimaryButton
-        onClick={() => {
-          setClick2CallExp('modal');
-        }}
-      >
-        Modal Click to Call
-      </PrimaryButton>
-      <PrimaryButton
-        onClick={() => {
-          setClick2CallExp('dragModal');
-        }}
-      >
-        Draggable Modal Click to Call
-      </PrimaryButton>
-      <PrimaryButton
-        id="callout-button"
-        onClick={() => {
-          setClick2CallExp('callout');
-        }}
-      >
-        Callout Click to Call
-      </PrimaryButton>
-      {click2CallExp === 'modal' && (
-        <ModalNoDragComposite adapterArgs={adapterParams} onDismiss={() => setClick2CallExp(undefined)} />
-      )}
-      {click2CallExp === 'dragModal' && (
-        <ModalDragComposite adapterArgs={adapterParams} onDismiss={() => setClick2CallExp(undefined)} />
-      )}
-      {click2CallExp === 'callout' && (
-        <CalloutComposite adapterArgs={adapterParams} onDismiss={() => setClick2CallExp(undefined)} />
-      )}
+    <Stack horizontal tokens={{ childrenGap: '1.5rem' }}>
+      <Stack tokens={{ childrenGap: '1.5rem' }}>
+        <Text>Click 2 Call</Text>
+        <PrimaryButton
+          onClick={() => {
+            setClick2CallExp('modal');
+          }}
+        >
+          Modal Click to Call
+        </PrimaryButton>
+        <PrimaryButton
+          onClick={() => {
+            setClick2CallExp('dragModal');
+          }}
+        >
+          Draggable Modal Click to Call
+        </PrimaryButton>
+        <PrimaryButton
+          id="callout-button"
+          onClick={() => {
+            setClick2CallExp('callout');
+          }}
+        >
+          Callout Click to Call
+        </PrimaryButton>
+        {click2CallExp === 'modal' && (
+          <ModalNoDragComposite
+            adapterArgs={adapterParams}
+            onDismiss={() => setClick2CallExp(undefined)}
+            alternateCallerId={alternateCallerId}
+            participants={participantIds}
+          />
+        )}
+        {click2CallExp === 'dragModal' && (
+          <ModalDragComposite
+            adapterArgs={adapterParams}
+            onDismiss={() => setClick2CallExp(undefined)}
+            alternateCallerId={alternateCallerId}
+            participants={participantIds}
+          />
+        )}
+        {click2CallExp === 'callout' && (
+          <CalloutComposite
+            adapterArgs={adapterParams}
+            onDismiss={() => setClick2CallExp(undefined)}
+            alternateCallerId={alternateCallerId}
+            participants={participantIds}
+          />
+        )}
+      </Stack>
+      <Stack tokens={{ childrenGap: '1.5rem' }}>
+        <TextField
+          className={outboundTextField}
+          label={'Participants'}
+          placeholder={"Comma seperated ACS user ID's"}
+          onChange={(_, newValue) => (newValue ? setParticipantIds([newValue]) : setParticipantIds(undefined))}
+        />
+        <TextField
+          className={outboundTextField}
+          label={'AlternateCallerId'}
+          placeholder={'ACS Phone number please'}
+          onChange={(_, newValue) => (newValue ? setAlternateCallerId(newValue) : setAlternateCallerId(undefined))}
+        />
+      </Stack>
     </Stack>
   );
 };
@@ -99,9 +143,12 @@ const CalloutComposite = (props: {
     locator: CallAdapterLocator;
   };
   onDismiss: () => void;
+  participants?: string[];
+  alternateCallerId?: string;
 }): JSX.Element => {
-  const { adapterArgs, onDismiss } = props;
-  console.log('adapterArgs', adapterArgs);
+  const { adapterArgs, onDismiss, participants } = props;
+
+  const locator = participants ? { participantIds: participants } : adapterArgs.locator;
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       onDismiss();
@@ -109,7 +156,7 @@ const CalloutComposite = (props: {
     adapter.joinCall();
     return new Promise((resolve, reject) => resolve(adapter));
   };
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test', locator }, afterCreate);
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
@@ -143,9 +190,11 @@ const ModalDragComposite = (props: {
     locator: CallAdapterLocator;
   };
   onDismiss: () => void;
+  participants?: string[];
+  alternateCallerId?: string;
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
-  console.log('adapterArgs', adapterArgs);
+
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       onDismiss();
@@ -161,6 +210,7 @@ const ModalDragComposite = (props: {
   return (
     <Modal
       isOpen={true}
+      isModeless={true}
       dragOptions={{ keepInBounds: true, moveMenuItemText: 'Move', closeMenuItemText: 'Close', menu: ContextualMenu }}
       onDismiss={onDismiss}
     >
@@ -168,7 +218,9 @@ const ModalDragComposite = (props: {
         <Text>Contoso's call experience</Text>
         <CallComposite
           adapter={adapter}
-          options={{ callControls: { peopleButton: false, moreButton: false, screenShareButton: false } }}
+          options={{
+            callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+          }}
         />
       </Stack>
     </Modal>
@@ -189,9 +241,11 @@ const ModalNoDragComposite = (props: {
     locator: CallAdapterLocator;
   };
   onDismiss: () => void;
+  participants?: string[];
+  alternateCallerId?: string;
 }): JSX.Element => {
   const { adapterArgs, onDismiss } = props;
-  console.log('adapterArgs', adapterArgs);
+
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       onDismiss();
@@ -202,9 +256,7 @@ const ModalNoDragComposite = (props: {
   const adapter = useAzureCommunicationCallAdapter(
     {
       ...adapterArgs,
-      displayName: 'test',
-      locator: { participantIds: ['+14039883391'] },
-      alternateCallerId: '+16198594787'
+      displayName: 'test'
     },
     afterCreate
   );
@@ -214,13 +266,15 @@ const ModalNoDragComposite = (props: {
   }
   return (
     <Stack>
-      <Modal isOpen={true} onDismiss={onDismiss}>
+      <Modal isOpen={true} onDismiss={onDismiss} isModeless={true}>
         <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '30rem' } }}>
           <Text>Contoso'sClick to call</Text>
           <Stack></Stack>
           <CallComposite
             adapter={adapter}
-            options={{ callControls: { peopleButton: false, moreButton: false, screenShareButton: false } }}
+            options={{
+              callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+            }}
           />
         </Stack>
       </Modal>
