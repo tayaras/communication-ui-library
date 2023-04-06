@@ -108,7 +108,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
                 }
               })
               .join('&');
-            window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500,height=400');
+            window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=420');
           }}
         >
           Same origin Click to Call
@@ -180,7 +180,7 @@ const CalloutComposite = (props: {
     adapter.on('callEnded', () => {
       onDismiss();
     });
-    adapter.joinCall();
+    adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
   const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test', locator }, afterCreate);
@@ -190,11 +190,10 @@ const CalloutComposite = (props: {
   }
   return (
     <FocusTrapCallout target={`#callout-button`} onDismiss={onDismiss} preventDismissOnResize>
-      <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '30rem' } }}>
-        <Text>Contoso's Call experience</Text>
+      <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '22rem', width: '30rem' } }}>
         <CallComposite
           options={{
-            callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+            callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
           }}
           adapter={adapter}
         />
@@ -241,12 +240,11 @@ const ModalDragComposite = (props: {
       dragOptions={{ keepInBounds: true, moveMenuItemText: 'Move', closeMenuItemText: 'Close', menu: ContextualMenu }}
       onDismiss={onDismiss}
     >
-      <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '30rem' } }}>
-        <Text>Contoso's call experience</Text>
+      <Stack styles={{ root: { height: '22rem', width: '30rem' } }}>
         <CallComposite
           adapter={adapter}
           options={{
-            callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+            callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
           }}
         />
       </Stack>
@@ -277,7 +275,7 @@ const ModalNoDragComposite = (props: {
     adapter.on('callEnded', () => {
       onDismiss();
     });
-    adapter.joinCall();
+    adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
   const adapter = useAzureCommunicationCallAdapter(
@@ -294,13 +292,11 @@ const ModalNoDragComposite = (props: {
   return (
     <Stack>
       <Modal isOpen={true} onDismiss={onDismiss} isModeless={true}>
-        <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '30rem' } }}>
-          <Text>Contoso'sClick to call</Text>
-          <Stack></Stack>
+        <Stack styles={{ root: { height: '22rem', width: '30rem' } }}>
           <CallComposite
             adapter={adapter}
             options={{
-              callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+              callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
             }}
           />
         </Stack>
@@ -329,7 +325,7 @@ const ReactPortalComposite = (props: {
     adapter.on('callEnded', () => {
       newWindow.current?.close();
     });
-    adapter.joinCall();
+    adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
 
@@ -351,7 +347,7 @@ const ReactPortalComposite = (props: {
         <CallComposite
           adapter={adapter}
           options={{
-            callControls: { peopleButton: false, moreButton: false, screenShareButton: false, displayType: 'compact' }
+            callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
           }}
         />
       </Stack>

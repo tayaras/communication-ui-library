@@ -237,11 +237,15 @@ const App = (): JSX.Element => {
       return <ClickToCallPage token={token} userId={userId} displayName={displayName} callLocator={callLocator} />;
     }
     case 'same-origin-call': {
+      if (!adapterArgs) {
+        document.title = `credentials - ${WEB_APP_TITLE}`;
+        return <Spinner label={'Getting user credentials from server'} ariaLive="assertive" labelPosition="top" />;
+      }
       return (
         <SameOriginCallScreen
           adapterArgs={{
             userId: adapterArgs.userId,
-            displayName: adapterArgs.displayName,
+            displayName: adapterArgs.displayName ?? '',
             token: adapterArgs.token,
             locator: adapterArgs.locator,
             alternateCallerId: undefined
