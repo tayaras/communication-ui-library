@@ -11,13 +11,14 @@ import { MicrosoftTeamsUserIdentifier } from '@azure/communication-common';
 import { setLogLevel } from '@azure/logger';
 import { initializeIcons, PrimaryButton, Spinner, Stack } from '@fluentui/react';
 import { CallAdapterLocator } from '@azure/communication-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   buildTime,
   callingSDKVersion,
   communicationReactSDKVersion,
   createGroupId,
   fetchTokenResponse,
+  getAdapterParamsFromUrl,
   getGroupIdFromUrl,
   getOutboundParticipants,
   getTeamsLinkFromUrl,
@@ -36,6 +37,7 @@ import { HomeScreen } from './views/HomeScreen';
 import { PageOpenInAnotherTab } from './views/PageOpenInAnotherTab';
 import { UnsupportedBrowserPage } from './views/UnsupportedBrowserPage';
 import { ClickToCallPage } from './views/ClickToCall';
+import { SameOriginCallScreen } from './views/SameOriginCallScreen';
 
 setLogLevel('warning');
 
@@ -45,7 +47,7 @@ console.log(
 
 initializeIcons();
 
-type AppPages = 'home' | 'call' | 'click-to-call';
+type AppPages = 'home' | 'call' | 'click-to-call' | 'same-origin-call';
 
 const App = (): JSX.Element => {
   const [page, setPage] = useState<AppPages>('home');
@@ -68,6 +70,16 @@ const App = (): JSX.Element => {
 
   /* @conditional-compile-remove(PSTN-calls) */
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>();
+
+  const adapterArgs = useMemo(() => {
+    return getAdapterParamsFromUrl();
+  }, []);
+
+  useEffect(() => {
+    if (adapterArgs) {
+      setPage('same-origin-call');
+    }
+  }, [adapterArgs]);
 
   // Get Azure Communications Service token from the server
   useEffect(() => {
@@ -223,6 +235,19 @@ const App = (): JSX.Element => {
         return <Spinner label={'Getting user credentials from server'} ariaLive="assertive" labelPosition="top" />;
       }
       return <ClickToCallPage token={token} userId={userId} displayName={displayName} callLocator={callLocator} />;
+    }
+    case 'same-origin-call': {
+      return (
+        <SameOriginCallScreen
+          adapterArgs={{
+            userId: adapterArgs.userId,
+            displayName: adapterArgs.displayName,
+            token: adapterArgs.token,
+            locator: adapterArgs.locator,
+            alternateCallerId: undefined
+          }}
+        />
+      );
     }
     default:
       document.title = `error - ${WEB_APP_TITLE}`;

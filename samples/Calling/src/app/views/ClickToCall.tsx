@@ -95,6 +95,24 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         >
           React portal Click to Call
         </PrimaryButton>
+        <PrimaryButton
+          onClick={() => {
+            const adapterArgsString = Object.keys(adapterParams)
+              .map((key) => {
+                if (key === 'userId') {
+                  return `${key}=${JSON.stringify(adapterParams[key])}`;
+                } else if (key === 'locator') {
+                  return `${key}=${JSON.stringify(adapterParams[key])}`;
+                } else {
+                  return `${key}=${adapterParams[key]}`;
+                }
+              })
+              .join('&');
+            window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500,height=400');
+          }}
+        >
+          Same origin Click to Call
+        </PrimaryButton>
         {click2CallExp === 'modal' && (
           <ModalNoDragComposite
             adapterArgs={adapterParams}
@@ -208,7 +226,7 @@ const ModalDragComposite = (props: {
     adapter.on('callEnded', () => {
       onDismiss();
     });
-    adapter.joinCall();
+    adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
   const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
