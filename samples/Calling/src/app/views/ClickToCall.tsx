@@ -100,9 +100,11 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
             const adapterArgsString = Object.keys(adapterParams)
               .map((key) => {
                 if (key === 'userId') {
-                  return `${key}=${JSON.stringify(adapterParams[key])}`;
+                  return `${key}=${JSON.stringify(adapterParams[key].communicationUserId)}`;
                 } else if (key === 'locator') {
                   return `${key}=${JSON.stringify(adapterParams[key])}`;
+                } else if (key === 'alternateCallerId' || key === 'credential') {
+                  return '';
                 } else {
                   return `${key}=${adapterParams[key]}`;
                 }
@@ -173,9 +175,8 @@ const CalloutComposite = (props: {
   onDismiss: () => void;
   participants?: string[];
 }): JSX.Element => {
-  const { adapterArgs, onDismiss, participants } = props;
+  const { adapterArgs, onDismiss } = props;
 
-  const locator = participants ? { participantIds: participants } : adapterArgs.locator;
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       onDismiss();
@@ -183,7 +184,7 @@ const CalloutComposite = (props: {
     adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test', locator }, afterCreate);
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;

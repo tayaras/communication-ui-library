@@ -244,7 +244,7 @@ const App = (): JSX.Element => {
       return (
         <SameOriginCallScreen
           adapterArgs={{
-            userId: adapterArgs.userId,
+            userId: adapterArgs.userId as CommunicationUserIdentifier,
             displayName: adapterArgs.displayName ?? '',
             token: adapterArgs.token,
             locator: adapterArgs.locator,

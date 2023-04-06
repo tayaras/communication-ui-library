@@ -30,7 +30,7 @@ export const SameOriginCallScreen = (props: {
   }, [adapterArgs.token, adapterArgs.userId]);
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
-      // window.close();
+      window.close();
     });
     adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));

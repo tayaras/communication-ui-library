@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 
 import { GroupLocator, RoomLocator, TeamsMeetingLinkLocator } from '@azure/communication-calling';
+import { CommunicationIdentifier } from '@azure/communication-common';
 /* @conditional-compile-remove(teams-adhoc-call) */ /* @conditional-compile-remove(PSTN-calls) */
-import { CallAdapterLocator, CallParticipantsLocator } from '@azure/communication-react';
+import {
+  CallAdapterLocator,
+  CallParticipantsLocator,
+  fromFlatCommunicationIdentifier
+} from '@azure/communication-react';
 /* @conditional-compile-remove(rooms) */
 import { Role } from '@azure/communication-react';
 import { v1 as generateGUID } from 'uuid';
@@ -41,7 +46,7 @@ export const getGroupIdFromUrl = (): GroupLocator | undefined => {
 
 type AdapterArgs = {
   token: string;
-  userId: { communicationUserId: string };
+  userId: CommunicationIdentifier;
   locator: CallAdapterLocator;
   displayName?: string;
   alternateCallerId?: string;
@@ -52,15 +57,15 @@ type AdapterArgs = {
  */
 export const getAdapterParamsFromUrl = (): AdapterArgs | undefined => {
   const urlParams = new URLSearchParams(window.location.search);
+  console.log(urlParams);
   const locator = urlParams.get('locator');
   const token = urlParams.get('token');
   const userId = urlParams.get('userId');
   return userId
     ? {
-        userId: JSON.parse(userId ? userId : '{ "communicationUserId": "userId not found" }'),
+        userId: fromFlatCommunicationIdentifier(userId),
         displayName: 'test',
         locator: locator ? JSON.parse(locator) : { groupId: 'locator not found' },
-        alternateCallerId: urlParams.get('phoneNumber') ?? '',
         token: token ? token : ''
       }
     : undefined;
