@@ -14,6 +14,54 @@ import { Link } from '@fluentui/react';
 import { FontIcon, Stack } from '@fluentui/react';
 import { MessageThreadStrings } from '../MessageThread';
 
+// Test Data
+const input = "Hey <ms-at-mention mentionId="mentionId" userId="xxxx" displayName="John Doe" mentionType="person">John Doe</ms-at-mention> how are you doing today?";
+
+const atMentionSuggestionRef = useRef<HTMLDivElement | null>(null);
+const htmlToReactParser = new Parser();
+const isValidNode = (): boolean => {
+  return true;
+};
+
+const handleOnClick = useCallback(
+  (attribs: AtMentionSuggestion, target: Target) => {
+    const onSuggestionClicked = props.atMentionDisplayOptions?.onSuggestionClicked;
+    const atMentionSuggetion: AtMentionSuggestion = {
+      userId: attribs.userId,
+      atMentionType: attribs.atMentionType,
+      displayName: attribs.displayName
+    };
+    onSuggestionClicked && onSuggestionClicked(atMentionSuggetion, target);
+    return '';
+  }
+);
+
+const processNodeDefinitions = new ProcessNodeDefinitions(React);
+const ProcessingInstructions = [
+  {
+    shouldProcessNode: (node: Node) => {
+      return node.attribs && node.name === 'ms-at-mention';
+    },
+    processNode: (node) => {
+      return (
+        <span
+        {...node.attribs}
+        ref={atMentionSuggestionRef}
+        style={{ color: 'red'}}
+        onClick={() => handleOnClick(node.attribs, atMentionSuggestionRef.current)}
+        >
+          John Doe
+        </span>
+      );
+    },
+    shouldProcessNode: function () {
+      return true;
+    },
+    processNode: processNodeDefinitions.processDefaultNode
+  }
+];
+const reactComponent = htmlToReactParser.parseWithInstructions(input, isValidNode, ProcessingInstructions);
+
 type ChatMessageContentProps = {
   message: ChatMessage;
   strings: MessageThreadStrings;
