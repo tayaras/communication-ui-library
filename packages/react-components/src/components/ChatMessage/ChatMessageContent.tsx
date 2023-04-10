@@ -6,12 +6,14 @@ import { _formatString } from '@internal/acs-ui-common';
 import { Parser } from 'html-to-react';
 import Linkify from 'react-linkify';
 import { ChatMessage } from '../../types/ChatMessage';
+import { ProcessNodeDefitions } from "html-to-react";
 /* @conditional-compile-remove(data-loss-prevention) */
 import { BlockedMessage } from '../../types/ChatMessage';
 import { LiveMessage } from 'react-aria-live';
 import { Link } from '@fluentui/react';
 /* @conditional-compile-remove(at-mention) */
 import { AtMentionDisplayOptions } from '../AtMentionFlyout';
+import { AtMentionSuggestion } from '@internal/react-components';
 
 /* @conditional-compile-remove(data-loss-prevention) */
 import { FontIcon, Stack } from '@fluentui/react';
