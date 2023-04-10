@@ -10,6 +10,9 @@ import { ChatMessage } from '../../types/ChatMessage';
 import { BlockedMessage } from '../../types/ChatMessage';
 import { LiveMessage } from 'react-aria-live';
 import { Link } from '@fluentui/react';
+/* @conditional-compile-remove(at-mention) */
+import { AtMentionDisplayOptions } from '../AtMentionFlyout';
+
 /* @conditional-compile-remove(data-loss-prevention) */
 import { FontIcon, Stack } from '@fluentui/react';
 import { MessageThreadStrings } from '../MessageThread';
@@ -65,6 +68,8 @@ const reactComponent = htmlToReactParser.parseWithInstructions(input, isValidNod
 type ChatMessageContentProps = {
   message: ChatMessage;
   strings: MessageThreadStrings;
+  /* @conditional-compile-remove(at-mention) */
+  atMentionDisplayOptions?: AtMentionDisplayOptions;
 };
 
 /* @conditional-compile-remove(data-loss-prevention) */

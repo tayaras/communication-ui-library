@@ -66,6 +66,8 @@ import getParticipantsWhoHaveReadMessage from './utils/getParticipantsWhoHaveRea
 /* @conditional-compile-remove(file-sharing) */
 import { FileDownloadHandler, FileMetadata } from './FileDownloadCards';
 import { useTheme } from '../theming';
+/* @conditional-compile-remove(at-mention) */
+import { AtMentionDisplayOptions, AtMentionLookupOptions } from './AtMentionFlyout';
 
 const isMessageSame = (first: ChatMessage, second: ChatMessage): boolean => {
   return (
@@ -695,6 +697,18 @@ export type MessageThreadProps = {
    * @beta
    */
   onDisplayDateTimeString?: (messageDate: Date) => string;
+  /* @conditional-compile-remove(at-mention) */
+  /**
+   * Optional props needed to lookup suggestions in the at mention scenario.
+   * @beta
+   */
+  atMentionLookupOptions?: AtMentionLookupOptions;
+  /* @conditional-compile-remove(at-mention) */
+  /**
+   * Optional props needed to display suggestions in the at mention scenario.
+   * @beta
+   */
+  atMentionDisplayOptions?: AtMentionDisplayOptions;
 };
 
 /**

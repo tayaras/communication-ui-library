@@ -22,6 +22,8 @@ import { _FileUploadCards } from './FileUploadCards';
 /* @conditional-compile-remove(file-sharing) */
 import { fileUploadCardsStyles } from './styles/SendBox.styles';
 import { SendBoxErrorBarError } from './SendBoxErrorBar';
+/* @conditional-compile-remove(at-mention) */
+import { AtMentionLookupOptions } from './AtMentionFlyout';
 
 const EMPTY_MESSAGE_REGEX = /^\s*$/;
 const MAXIMUM_LENGTH_OF_MESSAGE = 8000;
@@ -139,6 +141,13 @@ export interface SendBoxProps {
    * Optional callback called when message is sent
    */
   onSendMessage?: (content: string) => Promise<void>;
+  /* @conditional-compile-remove(at-mention) */
+  /**
+   * Optional props needed to lookup suggestions in the at mention scenario.
+   * @beta
+   */
+  atMentionLookupOptions?: AtMentionLookupOptions;
+
   /**
    * Optional callback called when user is typing
    */
@@ -226,6 +235,7 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
   const activeFileUploads = activeFileUploadsTrampoline(props);
 
   const [textValue, setTextValue] = useState('');
+  const [htmlValue, setHTMLValue] = useState<string | undefined>(undefined);
   const [textValueOverflow, setTextValueOverflow] = useState(false);
 
   const sendTextFieldRef = React.useRef<ITextField>(null);
@@ -247,19 +257,19 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
       return;
     }
 
-    // we dont want to send empty messages including spaces, newlines, tabs
+    const message = htmlValue || textValue;
+    // we don't want to send empty messages including spaces, newlines, tabs
     // Message can be empty if there is a valid file upload
-    if (!EMPTY_MESSAGE_REGEX.test(textValue) || hasFile(props)) {
-      onSendMessage && onSendMessage(sanitizeText(textValue));
+    if (!EMPTY_MESSAGE_REGEX.test(message) || hasFile(props)) {
+      onSendMessage && onSendMessage(sanitizeText(message));
+      console.log(sanitizeText(message));
       setTextValue('');
+      setHTMLValue(undefined);
     }
     sendTextFieldRef.current?.focus();
   };
 
-  const setText = (
-    event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-    newValue?: string | undefined
-  ): void => {
+  const setText = (newValue?: string | undefined): void => {
     if (newValue === undefined) {
       return;
     }
@@ -270,6 +280,15 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
       setTextValueOverflow(false);
     }
     setTextValue(newValue);
+  };
+
+  const setHTMLText = (newValue?: string | undefined): void => {
+    if (newValue !== undefined && newValue.length > MAXIMUM_LENGTH_OF_MESSAGE) {
+      setTextValueOverflow(true);
+    } else {
+      setTextValueOverflow(false);
+    }
+    setHTMLValue(newValue);
   };
 
   const textTooLongMessage = textValueOverflow ? strings.textTooLong : undefined;
@@ -366,7 +385,8 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
           inputClassName={sendBoxStyle}
           placeholderText={strings.placeholderText}
           textValue={textValue}
-          onChange={setText}
+          htmlValue={htmlValue}
+          onChange={(_, newValue) => setText(newValue)}
           onKeyDown={(ev) => {
             const keyWasSendingMessage = ev.key === 'Enter' && (ev.shiftKey === false || !supportNewline);
             if (!keyWasSendingMessage) {
@@ -379,6 +399,10 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
           styles={mergedStyles}
           supportNewline={supportNewline}
           maxLength={MAXIMUM_LENGTH_OF_MESSAGE}
+          onMentionAdd={(newTextValue, newHTMLValue) => {
+            setText(newTextValue);
+            setHTMLText(newHTMLValue);
+          }}
         >
           <VoiceOverButton
             onRenderIcon={onRenderSendIcon}

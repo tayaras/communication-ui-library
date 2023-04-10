@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import React, { useState, ReactNode, FormEvent, useCallback } from 'react';
+import React, { useState, ReactNode, FormEvent, useCallback, useRef } from 'react';
 import {
   Stack,
   TextField,
@@ -28,6 +28,8 @@ import {
 
 import { isDarkThemed } from '../theming/themeUtils';
 import { useTheme } from '../theming';
+/* @conditional-compile-remove(at-mention) */
+import { AtMentionLookupOptions, _AtMentionFlyout, AtMentionSuggestion } from './AtMentionFlyout';
 
 /**
  * @private
@@ -52,6 +54,7 @@ type InputBoxComponentProps = {
   'data-ui-id'?: string;
   id?: string;
   textValue: string;
+  htmlValue?: string;
   onChange: (event: FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string | undefined) => void;
   textFieldRef?: React.RefObject<ITextField>;
   inputClassName?: string;
@@ -64,6 +67,10 @@ type InputBoxComponentProps = {
   disabled?: boolean;
   styles?: InputBoxStylesProps;
   autoFocus?: 'sendBoxTextField';
+  /* @conditional-compile-remove(at-mention) */
+  atMentionLookupOptions?: AtMentionLookupOptions;
+  /* @conditional-compile-remove(at-mention) */
+  onMentionAdd: (newTextValue?: string | undefined, newHTMLValue?: string | undefined) => void;
 };
 
 /**
@@ -75,6 +82,7 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     id,
     'data-ui-id': dataUiId,
     textValue,
+    htmlValue,
     onChange,
     textFieldRef,
     placeholderText,
@@ -84,8 +92,18 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     inputClassName,
     errorMessage,
     disabled,
-    children
+    children,
+    atMentionLookupOptions,
+    onMentionAdd
   } = props;
+  const inputBoxRef = useRef(null);
+
+  // Current @mention query to pass to the callback
+  const [mentionQuery, setMentionQuery] = useState<string | undefined>(undefined);
+  // Current suggestion list, provided by the callback
+  const [mentionSuggestions, setMentionSuggestions] = useState<AtMentionSuggestion[]>([]);
+  // Index of the current trigger character in the text field
+  const [currentTagIndex, setCurrentTagIndex] = useState<number | undefined>(undefined);
 
   const mergedRootStyle = mergeStyles(inputBoxWrapperStyle, styles?.root);
   const mergedTextFiledStyle = mergeStyles(
@@ -115,8 +133,93 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     [onEnterKeyDown, onKeyDown, supportNewline]
   );
 
+  const onSuggestionSelected = useCallback(
+    (suggestion: AtMentionSuggestion) => {
+      //add default value for a trigger
+      const trigger = atMentionLookupOptions?.trigger || '';
+      const queryString = mentionQuery || '';
+      const mention = trigger + queryString;
+      if (mention !== '') {
+        const displayName = suggestion.displayName;
+        const updatedMention = trigger + displayName;
+        let selectionEnd = textFieldRef?.current?.selectionEnd || 0;
+        if (selectionEnd < 0) {
+          selectionEnd = 0;
+        } else if (selectionEnd > textValue.length) {
+          selectionEnd = textValue.length;
+        }
+        const updatedTextValue =
+          textValue.substring(0, selectionEnd - mention.length) + updatedMention + textValue.substring(selectionEnd);
+        let newHTMLValue: string | undefined;
+        if (htmlValue !== undefined) {
+          console.log('Not implemented');
+          console.log(htmlValue);
+        } else {
+          newHTMLValue =
+            textValue.substring(0, selectionEnd - mention.length) +
+            htmlStringForMentionSuggestion(suggestion) +
+            textValue.substring(selectionEnd);
+        }
+        onMentionAdd(updatedTextValue, newHTMLValue);
+      }
+      setMentionQuery(undefined);
+
+      //set focus back to text field
+      // textFieldRef?.current?.focus();
+    },
+    [atMentionLookupOptions?.trigger, mentionQuery, htmlValue, onMentionAdd, textFieldRef, textValue]
+  );
+
+  const htmlStringForMentionSuggestion = (suggestion: AtMentionSuggestion): string => {
+    const userIdHTML = ' userId ="' + suggestion.userId + '"';
+    const displayName = suggestion.displayName || '';
+    const displayNameHTML = ' displayName ="' + displayName + '"';
+    const suggestionTypeHTML = ' suggestionType ="' + suggestion.suggestionType + '"';
+    return (
+      '<msft-at-mention' + userIdHTML + displayNameHTML + suggestionTypeHTML + '>' + displayName + '</msft-at-mention>'
+    );
+  };
+
+  const handleOnChange = async (
+    event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
+    newValue?: string | undefined
+  ): Promise<void> => {
+    // If we are enabled for lookups,
+    if (!!atMentionLookupOptions) {
+      // Go see if there's a trigger character in the text, from the end of the string
+      const lastTagIndex = newValue?.lastIndexOf(atMentionLookupOptions?.trigger ?? '@') ?? -1;
+
+      if (!!currentTagIndex && !!lastTagIndex) {
+        setCurrentTagIndex(lastTagIndex);
+      } else {
+        // In the middle of a @mention lookup
+        if (lastTagIndex === -1) {
+          setCurrentTagIndex(undefined);
+          setMentionSuggestions([]);
+        } else {
+          if (lastTagIndex > -1) {
+            // This might want to be changed to not include the lookup tag. Currently it does.
+            const query = newValue?.slice(lastTagIndex);
+            if (!!query) {
+              const suggestions = (await atMentionLookupOptions?.onQueryUpdated(query)) ?? [];
+              setMentionSuggestions(suggestions);
+            }
+          }
+        }
+      }
+    }
+    onChange && onChange(event, newValue);
+  };
+
   return (
     <Stack className={mergedRootStyle}>
+      {mentionSuggestions.length > 0 && (
+        <_AtMentionFlyout
+          suggestions={mentionSuggestions}
+          target={inputBoxRef}
+          onSuggestionSelected={onSuggestionSelected}
+        />
+      )}
       <div className={mergedTextContainerStyle}>
         <TextField
           autoFocus={props.autoFocus === 'sendBoxTextField'}
@@ -130,12 +233,13 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
           inputClassName={mergedTextFiledStyle}
           placeholder={placeholderText}
           value={textValue}
-          onChange={onChange}
+          onChange={handleOnChange}
           autoComplete="off"
           onKeyDown={onTexFieldKeyDown}
           styles={mergedTextFieldStyle}
           disabled={disabled}
           errorMessage={errorMessage}
+          elementRef={inputBoxRef}
         />
         <Stack
           horizontal
