@@ -309,6 +309,7 @@ type ParsedTag = {
   openTagLength: number;
   htmlCloseTagStartIndex?: number; // Might not have a close tag
   closeTagLength?: number; // Might not have a close tag
+  content?: string; // Might not have content if close tag is missed
 };
 
 /**
@@ -353,6 +354,11 @@ const parseStringForMentions = (text: string, trigger: string): ParsedTag[] => {
           if (currentTag) {
             currentTag.htmlCloseTagStartIndex = currentOpenTagIndex;
             currentTag.closeTagLength = index - currentOpenTagIndex + 1;
+            currentTag.content = text.slice(
+              currentTag.htmlOpenTagStartIndex + currentTag.openTagLength + 1,
+              currentOpenTagIndex
+            );
+            console.log(currentTag.content);
             tags.push(currentTag);
             currentTag = undefined;
           } else {
@@ -380,7 +386,7 @@ const parseStringForMentions = (text: string, trigger: string): ParsedTag[] => {
   }
 
   const plainText = plainTextFromParsedTags(text, tags, trigger);
-  console.log(plainText);
+  console.log('plainText: ' + plainText);
   return tags;
 };
 
@@ -390,6 +396,12 @@ const parseStringForMentions = (text: string, trigger: string): ParsedTag[] => {
  * @private
  */
 const plainTextFromParsedTags = (textBlock: string, tags: ParsedTag[], trigger: string): string => {
+  if (tags.length === 0) {
+    return textBlock;
+  }
+  // for (const tag of tags) {
+
+  // }
   let text = '';
   let textBlockIndex = 0;
   let currentTagIndex = 0;
