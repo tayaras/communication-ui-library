@@ -44,7 +44,7 @@ export const SameOriginCallScreen = (props: {
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
   }
   return (
-    <Stack styles={{ root: { height: '22rem', width: '30rem' } }}>
+    <Stack styles={{ root: { height: '100vh', width: '100vw' } }}>
       <CallComposite
         options={{
           callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
