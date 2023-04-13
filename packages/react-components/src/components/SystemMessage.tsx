@@ -2,7 +2,10 @@
 // Licensed under the MIT license.
 
 import { IStyle, FontIcon, mergeStyles, Stack, Text } from '@fluentui/react';
-import { ComponentSlotStyle } from '@fluentui/react-northstar';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentSlotStyle = any;
+
 import React from 'react';
 import { systemMessageIconStyle } from './styles/SystemMessage.styles';
 

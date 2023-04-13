@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Chat,
-  ChatItemProps,
-  Flex,
-  Ref,
-  ShorthandValue,
-  mergeStyles as mergeNorthstarThemes
-} from '@fluentui/react-northstar';
+import { Chat, Flex, Ref, mergeStyles as mergeNorthstarThemes } from '../external-libs/n-star.index';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChatItemProps = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentSlotStyle = any;
+
 import {
   DownIconStyle,
   newMessageButtonContainerStyle,
@@ -39,7 +38,6 @@ import {
   IPersona,
   Theme
 } from '@fluentui/react';
-import { ComponentSlotStyle } from '@fluentui/react-northstar';
 import { LiveAnnouncer } from 'react-aria-live';
 import { delay } from './utils/delay';
 import {
@@ -151,22 +149,22 @@ export interface MessageThreadStyles extends BaseCustomStyles {
   /** Styles for new message container. */
   newMessageButtonContainer?: IStyle;
   /** Styles for chat container. */
-  chatContainer?: ComponentSlotStyle;
+  chatContainer?: any;
   /** styles for my chat items.  */
-  myChatItemMessageContainer?: ComponentSlotStyle;
+  myChatItemMessageContainer?: any;
   /** styles for chat items.  */
-  chatItemMessageContainer?: ComponentSlotStyle;
+  chatItemMessageContainer?: any;
   /** Styles for my chat message container. */
-  myChatMessageContainer?: ComponentSlotStyle;
+  myChatMessageContainer?: any;
   /** Styles for my chat message container in case of failure. */
-  failedMyChatMessageContainer?: ComponentSlotStyle;
+  failedMyChatMessageContainer?: any;
   /** Styles for chat message container. */
-  chatMessageContainer?: ComponentSlotStyle;
+  chatMessageContainer?: any;
   /** Styles for system message container. */
-  systemMessageContainer?: ComponentSlotStyle;
+  systemMessageContainer?: any;
   /** Styles for blocked message container. */
   /* @conditional-compile-remove(data-loss-prevention) */
-  blockedMessageContainer?: ComponentSlotStyle;
+  blockedMessageContainer?: any;
   /** Styles for message status indicator container. */
   messageStatusContainer?: (mine: boolean) => IStyle;
 }
@@ -366,7 +364,7 @@ const memoizeAllMessages = memoizeFnAll(
     onDeleteMessage?: (messageId: string) => Promise<void>,
     onSendMessage?: (content: string) => Promise<void>,
     disableEditing?: boolean
-  ): ShorthandValue<ChatItemProps> => {
+  ): ChatItemProps => {
     const messageProps: MessageProps = {
       message,
       strings,
@@ -381,7 +379,7 @@ const memoizeAllMessages = memoizeFnAll(
     const chatMessageItemProps = (
       message: ChatMessage | /* @conditional-compile-remove(data-loss-prevention) */ BlockedMessage,
       messageProps: MessageProps
-    ): ShorthandValue<ChatItemProps> => {
+    ): ChatItemProps => {
       const chatMessageComponent =
         onRenderMessage === undefined
           ? defaultChatMessageRenderer(messageProps)
@@ -725,7 +723,8 @@ export type MessageProps = {
   /**
    * Custom CSS styles for chat message container.
    */
-  messageContainerStyle?: ComponentSlotStyle;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messageContainerStyle?: any;
   /**
    * Whether the date of a message is displayed or not.
    *
@@ -1166,7 +1165,7 @@ export const MessageThread = (props: MessageThreadProps): JSX.Element => {
   const messagesToDisplay = useMemo(
     () =>
       memoizeAllMessages((memoizedMessageFn) => {
-        return messages.map((message: Message, index: number): ShorthandValue<ChatItemProps> => {
+        return messages.map((message: Message, index: number): ChatItemProps => {
           let key: string | undefined = message.messageId;
           let statusToRender: MessageStatus | undefined = undefined;
 

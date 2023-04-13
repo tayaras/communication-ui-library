@@ -3,7 +3,7 @@
 import { Stack } from '@fluentui/react';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { _FileUploadCardsStrings } from './FileUploadCards';
-import { Ref } from '@fluentui/react-northstar';
+import { Ref } from '../external-libs/n-star.index';
 import { _Caption } from './Caption';
 import { captionContainerClassName, captionsBannerClassName } from './styles/Captions.style';
 import { OnRenderAvatarCallback } from '../types';

@@ -11,8 +11,7 @@ import {
   FileMetadata,
   AttachmentDownloadResult
 } from '@azure/communication-react';
-import { Persona, PersonaPresence, PersonaSize, PrimaryButton, Stack } from '@fluentui/react';
-import { Divider } from '@fluentui/react-northstar';
+import { Separator, Persona, PersonaPresence, PersonaSize, PrimaryButton, Stack } from '@fluentui/react';
 import { Canvas, Description, Heading, Props, Source, Title } from '@storybook/addon-docs';
 import { Meta } from '@storybook/react/types-6-0';
 import React, { useState } from 'react';
@@ -269,7 +268,7 @@ const MessageThreadStory = (args): JSX.Element => {
 
   const onRenderMessage = (messageProps: MessageProps, defaultOnRender?: MessageRenderer): JSX.Element => {
     if (messageProps.message.messageType === 'custom') {
-      return <Divider content={messageProps.message.content} color="brand" important />;
+      return <Separator>{messageProps.message.content}</Separator>;
     }
 
     return defaultOnRender ? defaultOnRender(messageProps) : <></>;

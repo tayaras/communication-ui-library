@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ComponentSlotStyle } from '@fluentui/react-northstar';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentSlotStyle = any;
+
 import { _formatString } from '@internal/acs-ui-common';
 import React, { useCallback, useState } from 'react';
 import { ChatMessageComponentAsEditBox } from './ChatMessageComponentAsEditBox';

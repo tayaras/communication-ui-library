@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import { Icon, mergeStyles, Theme } from '@fluentui/react';
-import { MenuProps, Ref } from '@fluentui/react-northstar';
+import { Ref } from '../../external-libs/n-star.index';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MenuProps = any;
+
 import { _formatString } from '@internal/acs-ui-common';
 import React from 'react';
 import { chatActionsCSS, iconWrapperStyle } from '../styles/ChatMessageComponent.styles';

@@ -6,7 +6,6 @@
 
 /// <reference types="react" />
 
-import { ComponentSlotStyle } from '@fluentui/react-northstar';
 import { IButtonProps } from '@fluentui/react';
 import { IButtonStyles } from '@fluentui/react';
 import { IContextualMenuItem } from '@fluentui/react';
@@ -1091,7 +1090,7 @@ export type MessageContentType = 'text' | 'html' | 'richtext/html' | 'unknown';
 export type MessageProps = {
     message: Message;
     strings: MessageThreadStrings;
-    messageContainerStyle?: ComponentSlotStyle;
+    messageContainerStyle?: any;
     showDate?: boolean;
     disableEditing?: boolean;
     onUpdateMessage?: UpdateMessageCallback;
@@ -1198,17 +1197,17 @@ export interface MessageThreadStrings {
 
 // @public
 export interface MessageThreadStyles extends BaseCustomStyles {
-    blockedMessageContainer?: ComponentSlotStyle;
-    chatContainer?: ComponentSlotStyle;
-    chatItemMessageContainer?: ComponentSlotStyle;
-    chatMessageContainer?: ComponentSlotStyle;
-    failedMyChatMessageContainer?: ComponentSlotStyle;
+    blockedMessageContainer?: any;
+    chatContainer?: any;
+    chatItemMessageContainer?: any;
+    chatMessageContainer?: any;
+    failedMyChatMessageContainer?: any;
     loadPreviousMessagesButtonContainer?: IStyle;
     messageStatusContainer?: (mine: boolean) => IStyle;
-    myChatItemMessageContainer?: ComponentSlotStyle;
-    myChatMessageContainer?: ComponentSlotStyle;
+    myChatItemMessageContainer?: any;
+    myChatMessageContainer?: any;
     newMessageButtonContainer?: IStyle;
-    systemMessageContainer?: ComponentSlotStyle;
+    systemMessageContainer?: any;
 }
 
 // @public

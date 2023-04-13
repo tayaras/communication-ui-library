@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IStyle, mergeStyles } from '@fluentui/react';
-import { Chat, Text, ComponentSlotStyle } from '@fluentui/react-northstar';
+import { IStyle, Text, mergeStyles } from '@fluentui/react';
+import { Chat } from '../../external-libs/n-star.index';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentSlotStyle = any;
+
 import { _formatString } from '@internal/acs-ui-common';
 import React, { useCallback, useRef, useState } from 'react';
 import {

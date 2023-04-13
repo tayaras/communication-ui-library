@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext } from 'react';
 import { ThemeProvider, Theme, PartialTheme, getTheme, mergeThemes, mergeStyles } from '@fluentui/react';
-import { mergeThemes as mergeNorthstarThemes, Provider, teamsTheme } from '@fluentui/react-northstar';
+import { mergeThemes as mergeNorthstarThemes, Provider, teamsTheme } from '../external-libs/n-star.index';
 import { lightTheme } from './themes';
 
 /**
