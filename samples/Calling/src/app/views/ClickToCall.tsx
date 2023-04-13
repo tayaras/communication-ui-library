@@ -110,7 +110,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
                 }
               })
               .join('&');
-            window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=450');
+            return window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=450');
           }}
         >
           Same origin Click to Call
