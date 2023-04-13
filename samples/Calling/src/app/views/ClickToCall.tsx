@@ -7,6 +7,7 @@ import {
   MicrosoftTeamsUserIdentifier
 } from '@azure/communication-common';
 import {
+  AzureCommunicationCallAdapterArgs,
   CallAdapterLocator,
   CallComposite,
   toFlatCommunicationIdentifier,
@@ -28,6 +29,7 @@ import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { CallAdapter } from '@azure/communication-react';
 import { outboundTextField } from '../styles/HomeScreen.styles';
 import { createPortal } from 'react-dom';
+import { ClickToCallButton } from './components/ClickToCallButton';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -47,6 +49,8 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
 
   const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'reactPortal'>();
 
+  const [showCall, setShowCall] = useState(false);
+
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
 
@@ -64,7 +68,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
 
   return (
     <Stack horizontal tokens={{ childrenGap: '1.5rem' }}>
-      <Stack tokens={{ childrenGap: '1.5rem' }}>
+      {/* <Stack tokens={{ childrenGap: '1.5rem' }}>
         <Text>Click 2 Call</Text>
         <PrimaryButton
           onClick={() => {
@@ -139,7 +143,12 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         {click2CallExp === 'reactPortal' && (
           <ReactPortalComposite adapterArgs={adapterParams} participants={participantIds} />
         )}
-      </Stack>
+      </Stack> */}
+      <ClickToCallButton
+        adapterArgs={adapterParams}
+        onRenderCallSurface={ModalDragComposite}
+        onDismissCallSurface={() => setShowCall(false)}
+      />
       <Stack tokens={{ childrenGap: '1.5rem' }}>
         <TextField
           className={outboundTextField}
@@ -159,72 +168,16 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
 };
 
 /**
- * component to host the call composite in a callout
- * @param props
- * @returns
- */
-const CalloutComposite = (props: {
-  adapterArgs: {
-    userId: CommunicationUserIdentifier;
-    displayName: string;
-    credential: AzureCommunicationTokenCredential;
-    token: string;
-    locator: CallAdapterLocator;
-    alternateCallerId?: string;
-  };
-  onDismiss: () => void;
-  participants?: string[];
-}): JSX.Element => {
-  const { adapterArgs, onDismiss } = props;
-
-  const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
-    adapter.on('callEnded', () => {
-      onDismiss();
-    });
-    adapter.joinCall(true);
-    return new Promise((resolve, reject) => resolve(adapter));
-  };
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
-  if (!adapter) {
-    document.title = `credentials - ${WEB_APP_TITLE}`;
-    return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
-  }
-  return (
-    <FocusTrapCallout target={`#callout-button`} onDismiss={onDismiss} preventDismissOnResize>
-      <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '22rem', width: '30rem' } }}>
-        <CallComposite
-          options={{
-            callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
-          }}
-          adapter={adapter}
-        />
-      </Stack>
-    </FocusTrapCallout>
-  );
-};
-
-/**
  * component to host the call composite in a modal that is draggable.
  * @param props
  * @returns
  */
-const ModalDragComposite = (props: {
-  adapterArgs: {
-    userId: CommunicationUserIdentifier;
-    displayName: string;
-    credential: AzureCommunicationTokenCredential;
-    token: string;
-    locator: CallAdapterLocator;
-    alternateCallerId?: string;
-  };
-  onDismiss: () => void;
-  participants?: string[];
-}): JSX.Element => {
-  const { adapterArgs, onDismiss } = props;
-
+const ModalDragComposite = (adapterArgs: AzureCommunicationCallAdapterArgs, onDismiss?: () => void): JSX.Element => {
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
-      onDismiss();
+      if (onDismiss) {
+        onDismiss();
+      }
     });
     adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
@@ -258,7 +211,7 @@ const ModalDragComposite = (props: {
  * @param props
  * @returns
  */
-const ModalNoDragComposite = (props: {
+const ModalNoDragComposite = (args: {
   adapterArgs: {
     userId: CommunicationUserIdentifier;
     displayName: string;
@@ -270,7 +223,7 @@ const ModalNoDragComposite = (props: {
   onDismiss: () => void;
   participants?: string[];
 }): JSX.Element => {
-  const { adapterArgs, onDismiss } = props;
+  const { adapterArgs, onDismiss } = args;
   console.log('adapterArgs', adapterArgs);
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
@@ -303,6 +256,51 @@ const ModalNoDragComposite = (props: {
         </Stack>
       </Modal>
     </Stack>
+  );
+};
+
+/**
+ * component to host the call composite in a callout
+ * @param props
+ * @returns
+ */
+const CalloutComposite = (args: {
+  adapterArgs: {
+    userId: CommunicationUserIdentifier;
+    displayName: string;
+    credential: AzureCommunicationTokenCredential;
+    token: string;
+    locator: CallAdapterLocator;
+    alternateCallerId?: string;
+  };
+  onDismiss: () => void;
+  participants?: string[];
+}): JSX.Element => {
+  const { adapterArgs, onDismiss } = args;
+
+  const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
+    adapter.on('callEnded', () => {
+      onDismiss();
+    });
+    adapter.joinCall(true);
+    return new Promise((resolve, reject) => resolve(adapter));
+  };
+  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
+  if (!adapter) {
+    document.title = `credentials - ${WEB_APP_TITLE}`;
+    return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
+  }
+  return (
+    <FocusTrapCallout target={`#callout-button`} onDismiss={onDismiss} preventDismissOnResize>
+      <Stack tokens={{ childrenGap: '1.5rem' }} styles={{ root: { height: '22rem', width: '30rem' } }}>
+        <CallComposite
+          options={{
+            callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
+          }}
+          adapter={adapter}
+        />
+      </Stack>
+    </FocusTrapCallout>
   );
 };
 
