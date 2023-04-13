@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { CallComposite } from '../CallComposite/CallComposite';
 import { AdapterError } from '../common/adapters';
@@ -11,7 +11,8 @@ import { CallWithChatAdapter } from './adapter/CallWithChatAdapter';
 import { CallWithChatComposite } from './CallWithChatComposite';
 import { CallWithChatAdapterState } from './state/CallWithChatAdapterState';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 function createMockCallWithChatAdapter(): CallWithChatAdapter {
   const callWithChatAdapter = {} as CallWithChatAdapter;

@@ -4,11 +4,12 @@
 import React from 'react';
 import { MicrophoneButton } from './MicrophoneButton';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { createTestLocale, mountWithLocalization } from './utils/testUtils';
 import { registerIcons } from '@fluentui/react';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('MicrophoneButton strings should be localizable and overridable', () => {
   beforeEach(() => {

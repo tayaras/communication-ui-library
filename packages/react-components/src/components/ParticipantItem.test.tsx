@@ -4,10 +4,11 @@
 import React from 'react';
 import { ParticipantItem } from './ParticipantItem';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { mountWithLocalization, createTestLocale } from './utils/testUtils';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('ParticipantItem should work with localization', () => {
   test('Should use localized string', async () => {

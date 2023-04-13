@@ -3,12 +3,13 @@
 
 import { registerIcons } from '@fluentui/react';
 import Enzyme, { mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { MockCallAdapter } from './MockCallAdapter';
 import { CallComposite } from './CallComposite';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('CallComposite device permission test for different roles', () => {
   let audioDevicePermissionRequests = 0;

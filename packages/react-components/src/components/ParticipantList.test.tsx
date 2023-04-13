@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Enzyme, { mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 /* @conditional-compile-remove(rooms) */
 import { mountWithPermissions } from './utils/testUtils';
 import { ParticipantList } from './ParticipantList';
@@ -15,7 +15,8 @@ import { IContextualMenuItem } from '@fluentui/react';
 import { _getPermissions } from '../permissions';
 import { registerIcons } from '@fluentui/react';
 
-Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
+// Enzyme.configure({ adapter: new Adapter() });
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const dummyOnRemoveParticipantCallback = () => {

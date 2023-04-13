@@ -6,11 +6,13 @@ import { act } from 'react-dom/test-utils';
 import { MessageBar, registerIcons } from '@fluentui/react';
 import { ActiveErrorMessage, ErrorBar, ErrorBarProps } from './ErrorBar';
 import Enzyme, { ReactWrapper, mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 
 const ONE_DAY_MILLISECONDS = 24 * 3600 * 1000;
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
+
 registerIcons({
   icons: {
     errorbarclear: <></>,

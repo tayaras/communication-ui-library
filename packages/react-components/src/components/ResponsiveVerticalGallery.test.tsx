@@ -4,7 +4,7 @@
 import { registerIcons } from '@fluentui/react';
 import * as acs_ui_common from '@internal/acs-ui-common';
 import Enzyme, { mount, ReactWrapper } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { v1 as createGUID } from 'uuid';
 import { VideoGalleryRemoteParticipant } from '../types';
@@ -15,7 +15,9 @@ import { verticalGalleryContainerStyle } from './VideoGallery/styles/VideoGaller
 import { HORIZONTAL_GALLERY_GAP } from './styles/HorizontalGallery.styles';
 import { VideoTile } from './VideoTile';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
+
 registerIcons({
   icons: {
     verticalgalleryleftbutton: <></>,

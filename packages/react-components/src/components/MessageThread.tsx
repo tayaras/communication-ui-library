@@ -38,7 +38,7 @@ import {
   IPersona,
   Theme
 } from '@fluentui/react';
-import { LiveAnnouncer } from 'react-aria-live';
+// import { LiveAnnouncer } from 'react-aria-live';
 import { delay } from './utils/delay';
 import {
   BaseCustomStyles,
@@ -1256,12 +1256,12 @@ export const MessageThread = (props: MessageThreadProps): JSX.Element => {
 
   const chatBody = useMemo(() => {
     return (
-      <LiveAnnouncer>
-        <Chat
-          styles={mergeNorthstarThemes(chatStyle, linkStyles(theme), styles?.chatContainer ?? {})}
-          items={messagesToDisplay}
-        />
-      </LiveAnnouncer>
+      // <LiveAnnouncer>
+      <Chat
+        styles={mergeNorthstarThemes(chatStyle, linkStyles(theme), styles?.chatContainer ?? {})}
+        items={messagesToDisplay}
+      />
+      // </LiveAnnouncer>
     );
   }, [theme, styles?.chatContainer, messagesToDisplay]);
 

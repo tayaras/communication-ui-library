@@ -4,11 +4,11 @@
 import React from 'react';
 import { CameraButton } from './CameraButton';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { createTestLocale, mountWithLocalization } from './utils/testUtils';
 import { registerIcons } from '@fluentui/react';
 
-Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('CameraButton strings should be localizable and overridable', () => {
   beforeEach(() => {

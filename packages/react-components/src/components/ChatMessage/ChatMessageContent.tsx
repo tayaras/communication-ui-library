@@ -8,7 +8,7 @@ import Linkify from 'react-linkify';
 import { ChatMessage } from '../../types/ChatMessage';
 /* @conditional-compile-remove(data-loss-prevention) */
 import { BlockedMessage } from '../../types/ChatMessage';
-import { LiveMessage } from 'react-aria-live';
+// import { LiveMessage } from 'react-aria-live';
 import { Link } from '@fluentui/react';
 /* @conditional-compile-remove(data-loss-prevention) */
 import { FontIcon, Stack } from '@fluentui/react';
@@ -59,7 +59,7 @@ export const ChatMessageContent = (props: ChatMessageContentProps): JSX.Element 
 const MessageContentWithLiveAria = (props: MessageContentWithLiveAriaProps): JSX.Element => {
   return (
     <div data-ui-status={props.message.status} role="text" aria-label={props.ariaLabel}>
-      <LiveMessage message={props.liveMessage} aria-live="polite" />
+      {/* <LiveMessage message={props.liveMessage} aria-live="polite" /> */}
       {props.content}
     </div>
   );

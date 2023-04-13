@@ -99,11 +99,6 @@
       "reviewCategory": "sample"
     },
     {
-      "packageName": "@internal/storybook",
-      "projectFolder": "packages/storybook",
-      "reviewCategory": "tools"
-    },
-    {
       "packageName": "@internal/config",
       "projectFolder": "common/config",
       "reviewCategory": "tools"

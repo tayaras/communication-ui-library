@@ -10,7 +10,7 @@ import { CallAdapterProvider } from '../adapter/CallAdapterProvider';
 import { MockCallAdapter } from '../MockCallAdapter';
 import { useParticipantChangedAnnouncement } from './MediaGalleryUtils';
 import Enzyme, { ReactWrapper, mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { act } from 'react-dom/test-utils';
 import { initializeIcons } from '@fluentui/react';
 import { CommunicationUserKind } from '@azure/communication-common';
@@ -103,7 +103,8 @@ function expectNotAnnounced(root: ReactWrapper, value: string): void {
 
 describe.only('useParticipantChangedAnnouncement', () => {
   beforeAll(() => {
-    Enzyme.configure({ adapter: new Adapter() });
+    // Enzyme.configure({ adapter: new Adapter() });
+    Enzyme.configure(/*{ adapter: new Adapter() }*/);
     initializeIcons();
   });
 

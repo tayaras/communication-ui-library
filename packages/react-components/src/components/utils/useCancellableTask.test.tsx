@@ -5,11 +5,12 @@ import { Cancellable, useCancellableTask } from './useCancellableTask';
 import React, { useEffect, useRef, useState } from 'react';
 import { act } from 'react-dom/test-utils';
 import Enzyme, { mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 
 describe('cancellable task', () => {
   beforeAll(() => {
-    Enzyme.configure({ adapter: new Adapter() });
+    Enzyme.configure(/*{ adapter: new Adapter() }*/);
+    // Enzyme.configure({ adapter: new Adapter() });
   });
 
   it('completes triggered action if not cancelled', async () => {

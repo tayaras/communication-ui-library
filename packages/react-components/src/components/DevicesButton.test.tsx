@@ -4,7 +4,7 @@
 import React from 'react';
 import { DevicesButton, DevicesButtonProps } from './DevicesButton';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { createTestLocale, mountWithLocalization } from './utils/testUtils';
 import { setIconOptions } from '@fluentui/react';
 // Suppress icon warnings for tests. Icons are fetched from CDN which we do not want to perform during tests.
@@ -13,7 +13,8 @@ setIconOptions({
   disableWarnings: true
 });
 
-Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
+// Enzyme.configure({ adapter: new Adapter() });
 
 const mockProps: DevicesButtonProps = {
   cameras: [{ id: 'camera1', name: 'testCamera' }],

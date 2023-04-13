@@ -4,7 +4,7 @@
 import { ICalloutContentStyles, Icon, ITooltipHostStyles, mergeStyles, TooltipHost } from '@fluentui/react';
 import { MessageStatus, _formatString } from '@internal/acs-ui-common';
 import React, { useState } from 'react';
-import { LiveMessage } from 'react-aria-live';
+// import { LiveMessage } from 'react-aria-live';
 import { useLocale } from '../localization';
 import { useTheme } from '../theming';
 import { isDarkThemed } from '../theming/themeUtils';
@@ -98,10 +98,10 @@ export const MessageStatusIndicator = (props: MessageStatusIndicatorProps): JSX.
           calloutProps={{ ...calloutProps }}
           styles={hostStyles}
         >
-          {strings.failedToSendAriaLabel && (
+          {/* {strings.failedToSendAriaLabel && (
             // live message is used here and in the following tooltips so that aria labels are announced on mobile
             <LiveMessage message={strings.failedToSendAriaLabel} aria-live="polite" />
-          )}
+          )} */}
           <Icon
             role="status"
             data-ui-id="chat-composite-message-status-icon"
@@ -123,7 +123,7 @@ export const MessageStatusIndicator = (props: MessageStatusIndicatorProps): JSX.
           calloutProps={{ ...calloutProps }}
           styles={hostStyles}
         >
-          {strings.sendingAriaLabel && <LiveMessage message={strings.sendingAriaLabel} aria-live="polite" />}
+          {/* {strings.sendingAriaLabel && <LiveMessage message={strings.sendingAriaLabel} aria-live="polite" />} */}
 
           <Icon
             role="status"
@@ -166,7 +166,7 @@ export const MessageStatusIndicator = (props: MessageStatusIndicatorProps): JSX.
             }
           }}
         >
-          {strings.seenAriaLabel && <LiveMessage message={strings.seenAriaLabel} aria-live="polite" />}
+          {/* {strings.seenAriaLabel && <LiveMessage message={strings.seenAriaLabel} aria-live="polite" />} */}
 
           <Icon
             data-ui-id="chat-composite-message-status-icon"
@@ -185,7 +185,7 @@ export const MessageStatusIndicator = (props: MessageStatusIndicatorProps): JSX.
           data-ui-id="chat-composite-message-tooltip"
           styles={hostStyles}
         >
-          {strings.deliveredAriaLabel && <LiveMessage message={strings.deliveredAriaLabel} aria-live="polite" />}
+          {/* {strings.deliveredAriaLabel && <LiveMessage message={strings.deliveredAriaLabel} aria-live="polite" />} */}
           <Icon
             role="status"
             data-ui-id="chat-composite-message-status-icon"

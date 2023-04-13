@@ -3,7 +3,7 @@
 
 import { Persona, registerIcons } from '@fluentui/react';
 import Enzyme, { mount, ReactWrapper } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { GridLayout, StreamMedia, _ModalClone } from '.';
 import { VideoGalleryLocalParticipant, VideoGalleryRemoteParticipant } from '../types';
@@ -19,7 +19,8 @@ import { act } from 'react-dom/test-utils';
 /* @conditional-compile-remove(vertical-gallery) */
 import { VerticalGallery } from './VerticalGallery';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 registerIcons({
   icons: {
     horizontalgalleryleftbutton: <></>,

@@ -4,11 +4,12 @@
 import React from 'react';
 import { MessageStatusIndicator } from './MessageStatusIndicator';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { mountWithLocalization, createTestLocale } from './utils/testUtils';
 import { TooltipHost } from '@fluentui/react';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('MessageStatusIndicator strings should be localizable and overridable', () => {
   test('Should localize tooltip text', async () => {

@@ -5,12 +5,13 @@ import { initializeIcons, registerIcons } from '@fluentui/react';
 /* @conditional-compile-remove(pinned-participants) */
 import { IconButton } from '@fluentui/react';
 import Enzyme, { mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 import { VideoTile } from './VideoTile';
 import { act } from 'react-dom/test-utils';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 describe('VideoTile', () => {
   beforeAll(() => {

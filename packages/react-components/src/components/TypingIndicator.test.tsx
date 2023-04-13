@@ -4,10 +4,11 @@
 import React from 'react';
 import { TypingIndicator } from './TypingIndicator';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { mountWithLocalization, createTestLocale } from './utils/testUtils';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 const testLocale = createTestLocale({
   typingIndicator: {

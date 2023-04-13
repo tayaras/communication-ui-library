@@ -13,12 +13,13 @@ import { act } from 'react-dom/test-utils';
 import Enzyme from 'enzyme';
 /* @conditional-compile-remove(teams-inline-images) */
 import { mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+// import Adapter from 'enzyme-adapter-react-16';
 import { mountWithLocalization, createTestLocale } from './utils/testUtils';
 /* @conditional-compile-remove(date-time-customization) @conditional-compile-remove(data-loss-prevention) */
 import { COMPONENT_LOCALE_EN_US } from '../localization/locales';
 
-Enzyme.configure({ adapter: new Adapter() });
+// Enzyme.configure({ adapter: new Adapter() });
+Enzyme.configure(/*{ adapter: new Adapter() }*/);
 
 const twentyFourHoursAgo = (): Date => {
   const date = new Date();
