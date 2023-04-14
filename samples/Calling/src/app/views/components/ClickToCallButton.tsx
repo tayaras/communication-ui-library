@@ -16,10 +16,7 @@ export interface ClickToCallButtonProps {
   /**
    * Custom render function for displaying a CallComposite experience.
    */
-  onRenderCallSurface?: (
-    adapterArgs: AzureCommunicationCallAdapterArgs | TeamsCallAdapterArgs,
-    onDismiss: () => void
-  ) => Promise<JSX.Element>;
+  onRenderCallSurface?: (adapterArgs: AzureCommunicationCallAdapterArgs, onDismiss: () => void) => Promise<JSX.Element>;
   /**
    * Callback for sending adapter args to new window for call experience.
    *

@@ -15,8 +15,11 @@ import {
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
 import {
+  ChoiceGroup,
   ContextualMenu,
   FocusTrapCallout,
+  IChoiceGroupOption,
+  IconButton,
   Modal,
   PrimaryButton,
   Spinner,
@@ -25,10 +28,10 @@ import {
   TextField
 } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { CallAdapter } from '@azure/communication-react';
-import { outboundTextField } from '../styles/HomeScreen.styles';
+import { callOptionsGroupStyles, outboundTextField } from '../styles/HomeScreen.styles';
 import { createPortal } from 'react-dom';
 import { ClickToCallButton } from './components/ClickToCallButton';
 import heroSVG from '../../assets/hero.svg';
@@ -49,14 +52,15 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(userId), token);
   }, [token, userId]);
 
-  const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'reactPortal'>();
-
-  const [showCall, setShowCall] = useState(false);
-  const imageProps = { src: heroSVG.toString() };
-
+  const clickToCallOptions: IChoiceGroupOption[] = [
+    { key: 'modal', text: 'start call in modal' },
+    { key: 'window', text: 'start call in new window' }
+  ];
+  const [chosenCallOption, setChosenCallOption] = useState<IChoiceGroupOption>(clickToCallOptions[0]);
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
-
+  const startCallWindow: boolean = chosenCallOption.key === 'window';
+  const startCallModal: boolean = chosenCallOption.key === 'modal';
   // we also want to make this memoized version of the args for the new window.
   const adapterParams = useMemo(() => {
     return {
@@ -69,88 +73,36 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     };
   }, [userId, displayName, credential, token, callLocator, alternateCallerId, participantIds]);
 
+  const startNewWindow = useCallback(() => {
+    const adapterArgsString = Object.keys(adapterParams)
+      .map((key) => {
+        if (key === 'userId') {
+          return `${key}=${JSON.stringify(adapterParams[key].communicationUserId)}`;
+        } else if (key === 'locator') {
+          return `${key}=${JSON.stringify(adapterParams[key])}`;
+        } else if (key === 'alternateCallerId' || key === 'credential') {
+          return '';
+        } else {
+          return `${key}=${adapterParams[key]}`;
+        }
+      })
+      .join('&');
+    return window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=450');
+  }, [adapterParams]);
+
   return (
     <Stack horizontal tokens={{ childrenGap: '1.5rem' }}>
-      {/* <Stack tokens={{ childrenGap: '1.5rem' }}>
-        <Text>Click 2 Call</Text>
-        <PrimaryButton
-          onClick={() => {
-            setClick2CallExp('modal');
-          }}
-        >
-          Modal Click to Call
-        </PrimaryButton>
-        <PrimaryButton
-          onClick={() => {
-            setClick2CallExp('dragModal');
-          }}
-        >
-          Draggable Modal Click to Call
-        </PrimaryButton>
-        <PrimaryButton
-          id="callout-button"
-          onClick={() => {
-            setClick2CallExp('callout');
-          }}
-        >
-          Callout Click to Call
-        </PrimaryButton>
-        <PrimaryButton
-          onClick={() => {
-            setClick2CallExp('reactPortal');
-          }}
-        >
-          React portal Click to Call
-        </PrimaryButton>
-        <PrimaryButton
-          onClick={() => {
-            const adapterArgsString = Object.keys(adapterParams)
-              .map((key) => {
-                if (key === 'userId') {
-                  return `${key}=${JSON.stringify(adapterParams[key].communicationUserId)}`;
-                } else if (key === 'locator') {
-                  return `${key}=${JSON.stringify(adapterParams[key])}`;
-                } else if (key === 'alternateCallerId' || key === 'credential') {
-                  return '';
-                } else {
-                  return `${key}=${adapterParams[key]}`;
-                }
-              })
-              .join('&');
-            return window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=450');
-          }}
-        >
-          Same origin Click to Call
-        </PrimaryButton>
-        {click2CallExp === 'modal' && (
-          <ModalNoDragComposite
-            adapterArgs={adapterParams}
-            onDismiss={() => setClick2CallExp(undefined)}
-            participants={participantIds}
-          />
-        )}
-        {click2CallExp === 'dragModal' && (
-          <ModalDragComposite
-            adapterArgs={adapterParams}
-            onDismiss={() => setClick2CallExp(undefined)}
-            participants={participantIds}
-          />
-        )}
-        {click2CallExp === 'callout' && (
-          <CalloutComposite
-            adapterArgs={adapterParams}
-            onDismiss={() => setClick2CallExp(undefined)}
-            participants={participantIds}
-          />
-        )}
-        {click2CallExp === 'reactPortal' && (
-          <ReactPortalComposite adapterArgs={adapterParams} participants={participantIds} />
-        )}
-      </Stack> */}
+      <ChoiceGroup
+        styles={callOptionsGroupStyles}
+        defaultSelectedKey={'modal'}
+        options={clickToCallOptions}
+        onChange={(_, option) => option && setChosenCallOption(option)}
+      />
       <ClickToCallButton
         adapterArgs={adapterParams}
-        onRenderCallSurface={ModalDragComposite}
+        onRenderCallSurface={startCallModal ? ModalDragComposite : undefined}
         onDismissCallSurface={() => false}
+        onCreateNewWindowExperience={startCallWindow ? startNewWindow : undefined}
         onRenderLogo={() => {
           return <img src={heroSVG.toString()} alt="logo" />;
         }}
@@ -194,9 +146,7 @@ const ModalDragComposite = async (
   return (
     <Modal
       isOpen={true}
-      isModeless={true}
       dragOptions={{ keepInBounds: true, moveMenuItemText: 'Move', closeMenuItemText: 'Close', menu: ContextualMenu }}
-      onDismiss={onDismiss}
     >
       <Stack styles={{ root: { height: '22rem', width: '30rem' } }}>
         <CallComposite
