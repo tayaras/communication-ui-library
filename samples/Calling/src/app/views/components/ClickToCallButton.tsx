@@ -3,7 +3,7 @@
 
 import { AzureCommunicationCallAdapterArgs, TeamsCallAdapterArgs } from '@azure/communication-react';
 import { IStackStyles, PrimaryButton, Stack, Theme, useTheme } from '@fluentui/react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 /**
  * Properties for new Click to Call button
@@ -19,7 +19,7 @@ export interface ClickToCallButtonProps {
   onRenderCallSurface?: (
     adapterArgs: AzureCommunicationCallAdapterArgs | TeamsCallAdapterArgs,
     onDismiss: () => void
-  ) => JSX.Element;
+  ) => Promise<JSX.Element>;
   /**
    * Callback for sending adapter args to new window for call experience.
    *
@@ -47,25 +47,21 @@ export const ClickToCallButton = (props: ClickToCallButtonProps): JSX.Element =>
 
   const theme = useTheme();
 
-  // const [showCallSurface, setShowCallSurface] = useState(false);
+  const [callSurface, setCallSurface] = useState<JSX.Element>();
 
-  // const toggleCallSurface = useCallback(() => {
-  //   setShowCallSurface(!showCallSurface);
-  // },[])
-
-  const onClick = (): void => {
+  const onClick = async (): Promise<void> => {
     if (onCreateNewWindowExperience) {
       onCreateNewWindowExperience(adapterArgs);
     } else if (onRenderCallSurface && onDismissCallSurface) {
-      // toggleCallSurface();
+      setCallSurface(await onRenderCallSurface(adapterArgs, onDismissCallSurface));
     }
   };
 
   return (
     <Stack tokens={{ childrenGap: '0.5rem' }} styles={clickToCallContainerStyles(theme)}>
       {onRenderLogo && onRenderLogo()}
+      {callSurface}
       <PrimaryButton onClick={onClick}>Click to Call</PrimaryButton>
-      {onRenderCallSurface && onDismissCallSurface && onRenderCallSurface(adapterArgs, onDismissCallSurface)}
     </Stack>
   );
 };
@@ -74,7 +70,8 @@ const clickToCallContainerStyles = (theme: Theme): IStackStyles => {
   return {
     root: {
       width: '10rem',
-      height: '20rem',
+      maxHeight: '15rem',
+      padding: '0.5rem',
       boxShadow: theme.effects.elevation16,
       borderRadius: theme.effects.roundedCorner6,
       bottom: 0,

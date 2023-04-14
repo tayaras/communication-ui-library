@@ -10,6 +10,7 @@ import {
   AzureCommunicationCallAdapterArgs,
   CallAdapterLocator,
   CallComposite,
+  createAzureCommunicationCallAdapter,
   toFlatCommunicationIdentifier,
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
@@ -30,6 +31,7 @@ import { CallAdapter } from '@azure/communication-react';
 import { outboundTextField } from '../styles/HomeScreen.styles';
 import { createPortal } from 'react-dom';
 import { ClickToCallButton } from './components/ClickToCallButton';
+import heroSVG from '../../assets/hero.svg';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -50,6 +52,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   const [click2CallExp, setClick2CallExp] = useState<'callout' | 'modal' | 'dragModal' | 'reactPortal'>();
 
   const [showCall, setShowCall] = useState(false);
+  const imageProps = { src: heroSVG.toString() };
 
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
@@ -148,6 +151,9 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         adapterArgs={adapterParams}
         onRenderCallSurface={ModalDragComposite}
         onDismissCallSurface={() => setShowCall(false)}
+        onRenderLogo={() => {
+          return <img src={heroSVG.toString()} alt="logo" />;
+        }}
       />
       <Stack tokens={{ childrenGap: '1.5rem' }}>
         <TextField
@@ -172,7 +178,10 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
  * @param props
  * @returns
  */
-const ModalDragComposite = (adapterArgs: AzureCommunicationCallAdapterArgs, onDismiss?: () => void): JSX.Element => {
+const ModalDragComposite = async (
+  adapterArgs: AzureCommunicationCallAdapterArgs,
+  onDismiss?: () => void
+): Promise<JSX.Element> => {
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       if (onDismiss) {
@@ -182,11 +191,13 @@ const ModalDragComposite = (adapterArgs: AzureCommunicationCallAdapterArgs, onDi
     adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' }, afterCreate);
-  if (!adapter) {
-    document.title = `credentials - ${WEB_APP_TITLE}`;
-    return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
-  }
+
+  const adapter = await createAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' });
+  adapter.joinCall(true);
+  // if (!adapter) {
+  //   document.title = `credentials - ${WEB_APP_TITLE}`;
+  //   return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
+  // }
   return (
     <Modal
       isOpen={true}
