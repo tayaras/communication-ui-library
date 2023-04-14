@@ -150,7 +150,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
       <ClickToCallButton
         adapterArgs={adapterParams}
         onRenderCallSurface={ModalDragComposite}
-        onDismissCallSurface={() => setShowCall(false)}
+        onDismissCallSurface={() => false}
         onRenderLogo={() => {
           return <img src={heroSVG.toString()} alt="logo" />;
         }}
@@ -182,22 +182,15 @@ const ModalDragComposite = async (
   adapterArgs: AzureCommunicationCallAdapterArgs,
   onDismiss?: () => void
 ): Promise<JSX.Element> => {
-  const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
-    adapter.on('callEnded', () => {
-      if (onDismiss) {
-        onDismiss();
-      }
-    });
-    adapter.joinCall(true);
-    return new Promise((resolve, reject) => resolve(adapter));
-  };
-
   const adapter = await createAzureCommunicationCallAdapter({ ...adapterArgs, displayName: 'test' });
   adapter.joinCall(true);
-  // if (!adapter) {
-  //   document.title = `credentials - ${WEB_APP_TITLE}`;
-  //   return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
-  // }
+  adapter.on('callEnded', () => {
+    if (onDismiss) {
+      console.log('call ended');
+      onDismiss();
+    }
+  });
+
   return (
     <Modal
       isOpen={true}

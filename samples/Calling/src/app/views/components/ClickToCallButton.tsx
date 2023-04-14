@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { AzureCommunicationCallAdapterArgs, TeamsCallAdapterArgs } from '@azure/communication-react';
-import { IStackStyles, PrimaryButton, Stack, Theme, useTheme } from '@fluentui/react';
-import React, { useState } from 'react';
+import { IStackStyles, PrimaryButton, Spinner, Stack, Theme, useTheme } from '@fluentui/react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Properties for new Click to Call button
@@ -48,11 +48,19 @@ export const ClickToCallButton = (props: ClickToCallButtonProps): JSX.Element =>
   const theme = useTheme();
 
   const [callSurface, setCallSurface] = useState<JSX.Element>();
+  const [creatingClient, setCreatingClient] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (creatingClient && callSurface) {
+      setCreatingClient(false);
+    }
+  }, [creatingClient, callSurface]);
 
   const onClick = async (): Promise<void> => {
     if (onCreateNewWindowExperience) {
       onCreateNewWindowExperience(adapterArgs);
     } else if (onRenderCallSurface && onDismissCallSurface) {
+      setCreatingClient(true);
       setCallSurface(await onRenderCallSurface(adapterArgs, onDismissCallSurface));
     }
   };
@@ -60,6 +68,7 @@ export const ClickToCallButton = (props: ClickToCallButtonProps): JSX.Element =>
   return (
     <Stack tokens={{ childrenGap: '0.5rem' }} styles={clickToCallContainerStyles(theme)}>
       {onRenderLogo && onRenderLogo()}
+      {creatingClient && <Spinner label="Creating client..." />}
       {callSurface}
       <PrimaryButton onClick={onClick}>Click to Call</PrimaryButton>
     </Stack>
