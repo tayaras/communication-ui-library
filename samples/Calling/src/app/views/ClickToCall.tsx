@@ -35,6 +35,7 @@ import { callOptionsGroupStyles, outboundTextField } from '../styles/HomeScreen.
 import { createPortal } from 'react-dom';
 import { ClickToCallButton } from './components/ClickToCallButton';
 import heroSVG from '../../assets/hero.svg';
+import { ClickToCallWidget } from './components/ClickToCallWidget';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -53,7 +54,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   }, [token, userId]);
 
   const clickToCallOptions: IChoiceGroupOption[] = [
-    { key: 'modal', text: 'start call in modal' },
+    { key: 'modal', text: 'start call in widget' },
     { key: 'window', text: 'start call in new window' }
   ];
   const [chosenCallOption, setChosenCallOption] = useState<IChoiceGroupOption>(clickToCallOptions[0]);
@@ -91,14 +92,22 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   }, [adapterParams]);
 
   return (
-    <Stack horizontal tokens={{ childrenGap: '1.5rem' }}>
+    <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden' }}>
       <ChoiceGroup
         styles={callOptionsGroupStyles}
         defaultSelectedKey={'modal'}
         options={clickToCallOptions}
         onChange={(_, option) => option && setChosenCallOption(option)}
       />
-      <ClickToCallButton
+      <ClickToCallWidget
+        adapterArgs={{ args: adapterParams }}
+        onCreateNewWindowExperience={startCallWindow ? startNewWindow : undefined}
+        videoOptions={{ localVideo: false, remoteVideo: true }}
+        onRenderLogo={() => {
+          return <img src={heroSVG.toString()} alt="logo" />;
+        }}
+      />
+      {/* <ClickToCallButton
         adapterArgs={adapterParams}
         onRenderCallSurface={startCallModal ? ModalDragComposite : undefined}
         onDismissCallSurface={() => false}
@@ -106,7 +115,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         onRenderLogo={() => {
           return <img src={heroSVG.toString()} alt="logo" />;
         }}
-      />
+      /> */}
       <Stack tokens={{ childrenGap: '1.5rem' }}>
         <TextField
           className={outboundTextField}

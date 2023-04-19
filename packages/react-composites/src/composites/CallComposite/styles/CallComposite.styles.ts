@@ -14,9 +14,9 @@ const mainScreenContainerStyle: IStyle = {
  * @private
  */
 export const mainScreenContainerStyleDesktop = mergeStyles({
-  ...mainScreenContainerStyle,
-  minWidth: '30rem', // max of min-width of composite pages (Call page)
-  minHeight: '22rem' // max height of min-height of composite pages (Configuration page)
+  ...mainScreenContainerStyle
+  // minWidth: '30rem', // max of min-width of composite pages (Call page)
+  // minHeight: '22rem' // max height of min-height of composite pages (Configuration page)
 });
 
 /**

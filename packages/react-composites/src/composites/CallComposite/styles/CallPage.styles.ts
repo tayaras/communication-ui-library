@@ -27,8 +27,8 @@ const containerStyle: IStyle = {
  * @private
  */
 export const containerStyleDesktop = mergeStyles({
-  ...containerStyle,
-  minWidth: '30rem'
+  ...containerStyle
+  // minWidth: '30rem'
 });
 
 /**

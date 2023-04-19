@@ -113,7 +113,7 @@ export const CallArrangement = (props: CallArrangementProps): JSX.Element => {
   const callCompositeContainerCSS = useMemo(() => {
     return {
       display: isMobileWithActivePane ? 'none' : 'flex',
-      minWidth: props.mobileView ? 'unset' : `${compositeMinWidthRem}rem`,
+      // minWidth: props.mobileView ? 'unset' : `${compositeMinWidthRem}rem`,
       width: '100%',
       height: '100%'
     };
