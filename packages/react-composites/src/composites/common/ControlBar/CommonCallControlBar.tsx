@@ -249,7 +249,7 @@ export const CommonCallControlBar = (props: CommonCallControlBarProps & Containe
       <Stack
         horizontal
         reversed={!props.mobileView && !isOutOfSpace}
-        horizontalAlign="space-between"
+        // horizontalAlign="space-between"
         className={mergeStyles(
           callControlsContainerStyles,
           controlBarContainerStyles,
@@ -360,7 +360,7 @@ export const CommonCallControlBar = (props: CommonCallControlBarProps & Containe
             </Stack>
           </CallAdapterProvider>
         </Stack.Item>
-        {!props.mobileView && (
+        {!props.mobileView && (options.peopleButton || options.chatButton) && (
           <Stack.Item>
             <div ref={sidepaneControlsRef}>
               <Stack horizontal className={!props.mobileView ? mergeStyles(desktopButtonContainerStyle) : undefined}>
