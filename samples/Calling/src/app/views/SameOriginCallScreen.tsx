@@ -47,7 +47,7 @@ export const SameOriginCallScreen = (props: {
     <Stack styles={{ root: { height: '100vh', width: '100vw' } }}>
       <CallComposite
         options={{
-          callControls: { moreButton: false, screenShareButton: false, displayType: 'compact' }
+          callControls: { moreButton: false, peopleButton: false, screenShareButton: false, displayType: 'compact' }
         }}
         adapter={adapter}
       />
