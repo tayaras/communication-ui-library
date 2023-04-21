@@ -10,7 +10,7 @@ import {
 } from '@azure/communication-react';
 import { IStackStyles, PrimaryButton, Spinner, Stack, Theme, useTheme } from '@fluentui/react';
 import React, { useMemo } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export interface clickToCallWidgetProps {
   /**
