@@ -104,13 +104,22 @@ class CallContext {
     isTeamsCall: boolean,
     options?: {
       /* @conditional-compile-remove(rooms) */ roleHint?: Role;
+      cameraOn?: boolean;
+      microphoneOn?: boolean;
+      defaultCameraId?: string;
+      defaultMicrophoneId?: string;
+      defaultSpeakerId?: string;
       maxListeners?: number;
       onFetchProfile?: OnFetchProfileCallback;
       /* @conditional-compile-remove(video-background-effects) */ videoBackgroundImages?: VideoBackgroundImage[];
     }
   ) {
     this.state = {
-      isLocalPreviewMicrophoneEnabled: false,
+      isLocalPreviewMicrophoneEnabled: options?.microphoneOn ?? false,
+      isLocalPreviewCameraEnabled: options?.cameraOn ?? false,
+      defaultCameraId: options?.defaultCameraId ?? undefined,
+      defaultMicrophoneId: options?.defaultMicrophoneId ?? undefined,
+      defaultSpeakerId: options?.defaultSpeakerId ?? undefined,
       userId: clientState.userId,
       displayName: clientState.callAgent?.displayName,
       devices: clientState.deviceManager,
@@ -930,6 +939,8 @@ export type CallAdapterLocator =
  * @beta
  */
 export type AzureCommunicationCallAdapterOptions = {
+  cameraOn?: boolean;
+  microphoneOn?: boolean;
   /* @conditional-compile-remove(rooms) */
   /**
    * Use this to hint the role of the user when the role is not available before a Rooms call is started. This value

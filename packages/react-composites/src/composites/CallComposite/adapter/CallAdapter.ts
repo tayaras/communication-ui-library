@@ -77,6 +77,10 @@ export const END_CALL_PAGES: CallCompositePage[] = [
  */
 export type CallAdapterUiState = {
   isLocalPreviewMicrophoneEnabled: boolean;
+  isLocalPreviewCameraEnabled: boolean;
+  defaultCameraId: string | undefined;
+  defaultMicrophoneId: string | undefined;
+  defaultSpeakerId: string | undefined;
   page: CallCompositePage;
   /* @conditional-compile-remove(unsupported-browser) */
   unsupportedBrowserVersionsAllowed?: boolean;

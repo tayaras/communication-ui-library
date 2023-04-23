@@ -373,16 +373,63 @@ export const CallComposite = (props: CallCompositeProps): JSX.Element => {
 
   /* @conditional-compile-remove(rooms) */
   const roleHint = adapter.getState().roleHint;
-
+  const isLocalCameraEnabled = adapter.getState().isLocalPreviewCameraEnabled;
+  const defaultCameraId = adapter.getState().defaultCameraId;
+  const defaultMicrophoneId = adapter.getState().defaultMicrophoneId;
+  const defaultSpeakerId = adapter.getState().defaultSpeakerId;
   useEffect(() => {
     (async () => {
       const constrain = getQueryOptions({
         /* @conditional-compile-remove(rooms) */ role: roleHint
       });
       await adapter.askDevicePermission(constrain);
-      adapter.queryCameras();
-      adapter.queryMicrophones();
-      adapter.querySpeakers();
+      const cameras = await adapter.queryCameras();
+      const microphones = await adapter.queryMicrophones();
+      const speakers = await adapter.querySpeakers();
+
+      let selectedCamera;
+      if (cameras.length > 0) {
+        if (defaultCameraId) {
+          selectedCamera = cameras.filter((camera) => camera.id == defaultCameraId)[0];
+        }
+
+        if (!selectedCamera) {
+          selectedCamera = cameras[0];
+        }
+
+        await adapter.setCamera(selectedCamera);
+
+        if (isLocalCameraEnabled) {
+          await adapter.startCamera({ scalingMode: 'Crop' });
+        }
+      }
+
+      if (defaultMicrophoneId && microphones.length > 0) {
+        let selectedMicrophone;
+        if (defaultMicrophoneId) {
+          selectedMicrophone = microphones.filter((microphone) => microphone.id == defaultMicrophoneId)[0];
+        }
+
+        if (!selectedMicrophone) {
+          selectedMicrophone = microphones.filter((microphone) => microphone.isSystemDefault == true)[0];
+        }
+
+        await adapter.setMicrophone(selectedMicrophone);
+      }
+
+      // we may want to omit this for devices where it does a wierd microphone/speaker combination
+      if (defaultSpeakerId && speakers.length > 0) {
+        let selectedSpeaker;
+        if (defaultSpeakerId) {
+          selectedSpeaker = speakers.filter((speaker) => speaker.id == defaultSpeakerId)[0];
+        }
+
+        if (!selectedSpeaker) {
+          selectedSpeaker = microphones.filter((speaker) => speaker.isSystemDefault == true)[0];
+        }
+
+        await adapter.setSpeaker(selectedSpeaker);
+      }
     })();
   }, [adapter, /* @conditional-compile-remove(rooms) */ roleHint]);
 
