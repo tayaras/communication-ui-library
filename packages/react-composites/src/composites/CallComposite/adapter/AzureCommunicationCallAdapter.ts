@@ -427,7 +427,7 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
     });
   }
 
-  public joinCall(microphoneOn?: boolean): CallTypeOf<AgentType> | undefined {
+  public joinCall(microphoneOn?: boolean, cameraOn?: boolean): CallTypeOf<AgentType> | undefined {
     if (_isInCall(this.getState().call?.state ?? 'None')) {
       throw new Error('You are already in the call!');
     }
@@ -435,7 +435,7 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
     return this.teeErrorToEventEmitter(() => {
       const audioOptions: AudioOptions = { muted: !(microphoneOn ?? this.getState().isLocalPreviewMicrophoneEnabled) };
       // TODO: find a way to expose stream to here
-      const videoOptions = { localVideoStreams: this.localStream ? [this.localStream] : undefined };
+      const videoOptions = { localVideoStreams: undefined };
       /* @conditional-compile-remove(teams-adhoc-call) */
       /* @conditional-compile-remove(PSTN-calls) */
       if (isOutboundCall(this.locator)) {
@@ -446,6 +446,15 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
           videoOptions
         });
       }
+
+      if (cameraOn == false && isCameraOn(this.getState())) {
+        this.stopCamera();
+      }
+
+      if (cameraOn && !isCameraOn(this.getState())) {
+        this.startCamera();
+      }
+
       const call = this._joinCall(audioOptions, videoOptions);
 
       this.processNewCall(call);
