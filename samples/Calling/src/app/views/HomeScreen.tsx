@@ -204,14 +204,6 @@ export const HomeScreen = (props: HomeScreenProps): JSX.Element => {
                 onChange={(_, option) => option && setChosenCallOption(option)}
               />
             )}
-            {(teamsCallChosen || /* @conditional-compile-remove(teams-identity-support) */ teamsIdentityChosen) && (
-              <TextField
-                className={teamsItemStyle}
-                iconProps={{ iconName: 'Link' }}
-                placeholder={'Enter a Teams meeting link'}
-                onChange={(_, newValue) => newValue && setCallLocator({ meetingLink: newValue })}
-              />
-            )}
             {
               /* @conditional-compile-remove(teams-identity-support) */ chosenCallOption.key === 'TeamsIdentity' && (
                 <Stack>
