@@ -3,7 +3,7 @@
 
 import { CommunicationUserIdentifier } from '@azure/communication-common';
 /* @conditional-compile-remove(rooms) */
-import { Role } from '@azure/communication-react';
+import { AzureCommunicationCallAdapterArgs, Role } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
 import { fromFlatCommunicationIdentifier } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
@@ -13,12 +13,13 @@ import { initializeIcons, PrimaryButton, Spinner, Stack } from '@fluentui/react'
 import { CallAdapterLocator } from '@azure/communication-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  AdapterArgs,
   buildTime,
   callingSDKVersion,
   communicationReactSDKVersion,
   createGroupId,
   fetchTokenResponse,
-  getAdapterParamsFromUrl,
+  getStartSessionFromURL,
   getGroupIdFromUrl,
   getOutboundParticipants,
   getTeamsLinkFromUrl,
@@ -65,18 +66,40 @@ const App = (): JSX.Element => {
   /* @conditional-compile-remove(rooms) */
   const [role, setRole] = useState<Role>();
 
+  const [adapterArgs, setAdapterArgs] = useState<AdapterArgs | undefined>();
+
   /* @conditional-compile-remove(teams-identity-support) */
   const [isTeamsCall, setIsTeamsCall] = useState<boolean>(false);
 
   /* @conditional-compile-remove(PSTN-calls) */
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>();
 
-  const adapterArgs = useMemo(() => {
-    return getAdapterParamsFromUrl();
+  const startSession = useMemo(() => {
+    return getStartSessionFromURL();
   }, []);
 
   useEffect(() => {
+    window.addEventListener('message', (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      // console.log(event.data);
+      if ((event.data as AdapterArgs).userId) {
+        setAdapterArgs(event.data as AdapterArgs);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (startSession) {
+      console.log('asking for args');
+      window.opener.postMessage('args please', window.opener.origin);
+    }
+  }, [startSession]);
+
+  useEffect(() => {
     if (adapterArgs) {
+      console.log('starting session');
       setPage('same-origin-call');
     }
   }, [adapterArgs]);

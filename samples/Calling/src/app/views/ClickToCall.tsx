@@ -5,7 +5,7 @@ import { CommunicationUserIdentifier, MicrosoftTeamsUserIdentifier } from '@azur
 import { CallAdapterLocator, toFlatCommunicationIdentifier } from '@azure/communication-react';
 import { ChoiceGroup, IChoiceGroupOption, Stack, TextField } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { WEB_APP_TITLE, createGroupId } from '../utils/AppUtils';
 import { callOptionsGroupStyles, outboundTextField } from '../styles/HomeScreen.styles';
 import heroSVG from '../../assets/hero.svg';
@@ -34,6 +34,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   const [chosenCallOption, setChosenCallOption] = useState<IChoiceGroupOption>(clickToCallOptions[0]);
   const [alternateCallerId, setAlternateCallerId] = useState<string | undefined>(undefined);
   const [participantIds, setParticipantIds] = useState<string[]>();
+  const newWindowRef = React.useRef<Window | null>(null);
   const startCallWindow: boolean = chosenCallOption.key === 'window';
   // we also want to make this memoized version of the args for the new window.
   const adapterParams = useMemo(() => {
@@ -47,21 +48,29 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     };
   }, [userId, displayName, credential, token, callLocator, alternateCallerId, participantIds]);
 
+  useEffect(() => {
+    window.addEventListener('message', (event) => {
+      if (event.origin !== window.origin) return;
+      if (event.data === 'args please') {
+        const data = {
+          userId: adapterParams.userId,
+          displayName: adapterParams.displayName,
+          token: adapterParams.token,
+          locator: adapterParams.locator,
+          alternateCallerId: adapterParams.alternateCallerId
+        };
+        newWindowRef.current?.postMessage(data, window.origin);
+      }
+    });
+  }, []);
+
   const startNewWindow = useCallback(() => {
-    const adapterArgsString = Object.keys(adapterParams)
-      .map((key) => {
-        if (key === 'userId') {
-          return `${key}=${JSON.stringify(adapterParams[key].communicationUserId)}`;
-        } else if (key === 'locator') {
-          return `${key}=${JSON.stringify(adapterParams[key])}`;
-        } else if (key === 'alternateCallerId' || key === 'credential') {
-          return '';
-        } else {
-          return `${key}=${adapterParams[key]}`;
-        }
-      })
-      .join('&');
-    return window.open(window.origin + `/?${adapterArgsString}`, WEB_APP_TITLE, 'width=500, height=450');
+    const startNewSessionString = 'newSession=true';
+    newWindowRef.current = window.open(
+      window.origin + `/?${startNewSessionString}`,
+      WEB_APP_TITLE,
+      'width=500, height=450'
+    );
   }, [adapterParams]);
 
   return (

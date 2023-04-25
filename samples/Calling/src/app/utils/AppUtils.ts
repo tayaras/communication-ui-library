@@ -44,7 +44,7 @@ export const getGroupIdFromUrl = (): GroupLocator | undefined => {
   return gid ? { groupId: gid } : undefined;
 };
 
-type AdapterArgs = {
+export type AdapterArgs = {
   token: string;
   userId: CommunicationIdentifier;
   locator: CallAdapterLocator;
@@ -52,23 +52,12 @@ type AdapterArgs = {
   alternateCallerId?: string;
 };
 /**
- * get adapter constructor args from url
+ * get go ahead to request for adapter args from url
  * @returns
  */
-export const getAdapterParamsFromUrl = (): AdapterArgs | undefined => {
+export const getStartSessionFromURL = (): boolean | undefined => {
   const urlParams = new URLSearchParams(window.location.search);
-  console.log(urlParams);
-  const locator = urlParams.get('locator');
-  const token = urlParams.get('token');
-  const userId = urlParams.get('userId');
-  return userId
-    ? {
-        userId: fromFlatCommunicationIdentifier(userId),
-        displayName: 'test',
-        locator: locator ? JSON.parse(locator) : { groupId: 'locator not found' },
-        token: token ? token : ''
-      }
-    : undefined;
+  return urlParams.get('newSession') === 'true';
 };
 
 export const createGroupId = (): GroupLocator => ({ groupId: generateGUID() });
