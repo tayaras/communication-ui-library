@@ -3,7 +3,7 @@
 
 import { CommunicationUserIdentifier } from '@azure/communication-common';
 /* @conditional-compile-remove(rooms) */
-import { AzureCommunicationCallAdapterArgs, Role } from '@azure/communication-react';
+import { Role } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
 import { fromFlatCommunicationIdentifier } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
