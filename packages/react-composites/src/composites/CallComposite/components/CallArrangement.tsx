@@ -22,7 +22,7 @@ import { AvatarPersonaDataCallback } from '../../common/AvatarPersona';
 import { CaptionsBanner } from '../../common/CaptionsBanner';
 import { containerDivStyles } from '../../common/ContainerRectProps';
 /* @conditional-compile-remove(one-to-n-calling) @conditional-compile-remove(PSTN-calls) */
-import { compositeMinWidthRem } from '../../common/styles/Composite.styles';
+// import { compositeMinWidthRem } from '../../common/styles/Composite.styles';
 import { useAdapter } from '../adapter/CallAdapterProvider';
 import { CallControls, CallControlsProps } from '../components/CallControls';
 import { CommonCallControlBar } from '../../common/ControlBar/CommonCallControlBar';

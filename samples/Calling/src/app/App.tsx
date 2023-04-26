@@ -93,7 +93,9 @@ const App = (): JSX.Element => {
   useEffect(() => {
     if (startSession) {
       console.log('asking for args');
-      window.opener.postMessage('args please', window.opener.origin);
+      if (window.opener) {
+        window.opener.postMessage('args please', window.opener.origin);
+      }
     }
   }, [startSession]);
 
