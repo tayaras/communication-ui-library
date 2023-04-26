@@ -123,7 +123,7 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
 const clickToCallContainerStyles = (theme: Theme): IStackStyles => {
   return {
     root: {
-      width: '16rem',
+      minwidth: '16rem',
       maxHeight: '20rem',
       padding: '0.5rem',
       boxShadow: theme.effects.elevation16,
