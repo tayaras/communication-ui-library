@@ -15,6 +15,7 @@ const OVERLAY_CONTENT_ZINDEX = OVERLAY_BACKGROUND_ZINDEX + 1;
 export const containerStyles: IStackStyles = {
   root: {
     height: '100%',
+    minHeight: '10rem',
     width: '100%',
     position: 'relative'
   }
