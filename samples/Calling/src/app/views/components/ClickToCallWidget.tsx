@@ -55,13 +55,13 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
   };
 
   const theme = useTheme();
-  console.log(adapterArgs);
+  // console.log(adapterArgs);
   const args = useMemo(() => adapterArgs.args, [adapterArgs.args]);
   const adapter = useAzureCommunicationCallAdapter(
     { ...args, displayName: 'test' },
     adapterArgs?.afterCreate ?? afterCreate
   );
-  console.log(adapter);
+  // console.log(adapter);
   const [inCall, setInCall] = useState(false);
 
   if (onCreateNewWindowExperience) {

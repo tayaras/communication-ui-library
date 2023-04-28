@@ -51,7 +51,7 @@ initializeIcons();
 type AppPages = 'home' | 'call' | 'click-to-call' | 'same-origin-call';
 
 const App = (): JSX.Element => {
-  const [page, setPage] = useState<AppPages>('home');
+  const [page, setPage] = useState<AppPages>('click-to-call');
 
   // User credentials to join a call with - these are retrieved from the server
   const [token, setToken] = useState<string>();
@@ -85,6 +85,7 @@ const App = (): JSX.Element => {
       }
       // console.log(event.data);
       if ((event.data as AdapterArgs).userId) {
+        console.log(event.data);
         setAdapterArgs(event.data as AdapterArgs);
       }
     });

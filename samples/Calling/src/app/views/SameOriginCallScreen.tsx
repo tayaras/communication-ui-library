@@ -25,6 +25,7 @@ export const SameOriginCallScreen = (props: {
 }): JSX.Element => {
   const { adapterArgs } = props;
   const locator = adapterArgs.locator;
+  // console.log(adapterArgs)
   const credential = useMemo(() => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(adapterArgs.userId), adapterArgs.token);
   }, [adapterArgs.token, adapterArgs.userId]);
