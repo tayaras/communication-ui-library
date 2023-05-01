@@ -49,13 +49,14 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
 
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
+      adapter.dispose();
       setInCall(false);
     });
     return new Promise((resolve, reject) => resolve(adapter));
   };
 
   const theme = useTheme();
-  // console.log(adapterArgs);
+  console.log(adapterArgs.args.locator);
   const args = useMemo(() => adapterArgs.args, [adapterArgs.args]);
   const adapter = useAzureCommunicationCallAdapter(
     { ...args, displayName: 'test' },

@@ -9,7 +9,7 @@ import { fromFlatCommunicationIdentifier } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
 import { MicrosoftTeamsUserIdentifier } from '@azure/communication-common';
 import { setLogLevel } from '@azure/logger';
-import { initializeIcons, PrimaryButton, Spinner, Stack } from '@fluentui/react';
+import { initializeIcons, PrimaryButton, Spinner, Stack, createTheme } from '@fluentui/react';
 import { CallAdapterLocator } from '@azure/communication-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -277,7 +277,7 @@ const App = (): JSX.Element => {
             displayName: adapterArgs.displayName ?? '',
             token: adapterArgs.token,
             locator: adapterArgs.locator,
-            alternateCallerId: undefined
+            alternateCallerId: adapterArgs.alternateCallerId
           }}
         />
       );
@@ -304,3 +304,31 @@ const getJoinParams = (locator: CallAdapterLocator): string => {
 };
 
 export default App;
+
+export const drPepperTheme = createTheme({
+  palette: {
+    themePrimary: '#e3d7ba',
+    themeLighterAlt: '#e6dbc1',
+    themeLighter: '#e9dfc8',
+    themeLight: '#ece4d0',
+    themeTertiary: '#efe8d7',
+    themeSecondary: '#f2ecdf',
+    themeDarkAlt: '#f5f1e6',
+    themeDark: '#f9f5ee',
+    themeDarker: '#fcfaf6',
+    neutralLighterAlt: '#9d1933',
+    neutralLighter: '#a11f39',
+    neutralLight: '#a82a43',
+    neutralQuaternaryAlt: '#ac3049',
+    neutralQuaternary: '#af364e',
+    neutralTertiaryAlt: '#bd5166',
+    neutralTertiary: '#ece4d0',
+    neutralSecondary: '#efe8d7',
+    neutralSecondaryAlt: '#efe8d7',
+    neutralPrimaryAlt: '#f2ecdf',
+    neutralPrimary: '#e3d7ba',
+    neutralDark: '#f9f5ee',
+    black: '#fcfaf6',
+    white: '#99122d'
+  }
+});

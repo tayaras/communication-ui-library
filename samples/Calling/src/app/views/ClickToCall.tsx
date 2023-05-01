@@ -42,9 +42,9 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
       displayName,
       credential,
       token,
-      locator: participantIds ? { participantIds } : callLocator
+      locator: participantIds ? { participantIds } : callLocator,
+      alternateCallerId: '+15125186727'
     };
-    console.log(args);
     return args;
   }, [userId, displayName, credential, token, callLocator, participantIds]);
 
@@ -58,13 +58,14 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           userId: adapterParams.userId,
           displayName: adapterParams.displayName,
           token: adapterParams.token,
-          locator: adapterParams.locator
+          locator: adapterParams.locator,
+          alternateCallerId: adapterParams.alternateCallerId
         };
         console.log(data);
         newWindowRef.current?.postMessage(data, window.origin);
       }
     });
-  }, [adapterParams]);
+  }, [adapterParams, adapterParams.locator]);
 
   const startNewWindow = useCallback(() => {
     const startNewSessionString = 'newSession=true';
@@ -85,6 +86,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           <li>That teams tennant user ID or CallQueue ID that will transfer to that user</li>
           <li>Format for teams user: 8:orgid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</li>
           <li>Format for CallQueue: 28:orgid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</li>
+          <li>Format for phone number: +1xxxxxxxxxx (for NA numbers, replace country code as needed)</li>
         </ul>
         <Text>
           Once you have logged in to teams with the test user. You can copy the Id into the participants field below and
@@ -129,7 +131,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
             placeholder={'Teams user ID or CallQueue ID'}
             onChange={(_, newValue) => {
               console.log(newValue);
-              newValue ? setParticipantIds([newValue]) : setParticipantIds(participantIds);
+              newValue ? setParticipantIds([newValue]) : setParticipantIds(undefined);
             }}
           />
         </Stack>

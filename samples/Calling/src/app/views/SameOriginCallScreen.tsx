@@ -25,12 +25,13 @@ export const SameOriginCallScreen = (props: {
 }): JSX.Element => {
   const { adapterArgs } = props;
   const locator = adapterArgs.locator;
-  // console.log(adapterArgs)
+  // console.log(adapterArgs);
   const credential = useMemo(() => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(adapterArgs.userId), adapterArgs.token);
   }, [adapterArgs.token, adapterArgs.userId]);
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
+      adapter.dispose();
       window.close();
     });
     adapter.joinCall(true);
@@ -40,6 +41,7 @@ export const SameOriginCallScreen = (props: {
     { ...adapterArgs, displayName: 'test', locator, credential },
     afterCreate
   );
+  console.log(adapter);
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
