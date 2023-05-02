@@ -8,7 +8,18 @@ import {
   TeamsCallAdapterArgs,
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
-import { IStackStyles, PrimaryButton, Spinner, Stack, Theme, useTheme } from '@fluentui/react';
+import {
+  IButtonStyles,
+  IStackStyles,
+  IconButton,
+  PrimaryButton,
+  Spinner,
+  Stack,
+  TextField,
+  Theme,
+  useTheme
+} from '@fluentui/react';
+import { kcupTheme } from '../../App';
 import React, { useMemo } from 'react';
 import { useState } from 'react';
 
@@ -38,6 +49,12 @@ export interface clickToCallWidgetProps {
    * @returns
    */
   onRenderLogo?: () => JSX.Element;
+  /**
+   * Handler to set displayName for the user in the call.
+   * @param displayName
+   * @returns
+   */
+  onSetDisplayName?: (displayName: string | undefined) => void;
 }
 
 /**
@@ -45,47 +62,85 @@ export interface clickToCallWidgetProps {
  * @param props
  */
 export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element => {
-  const { adapterArgs, onCreateNewWindowExperience, videoOptions, onRenderLogo } = props;
+  const { adapterArgs, onCreateNewWindowExperience, videoOptions, onRenderLogo, onSetDisplayName } = props;
 
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       adapter.dispose();
-      setInCall(false);
+      setWidgetState('ended');
     });
     return new Promise((resolve, reject) => resolve(adapter));
   };
 
+  const [widgetState, setWidgetState] = useState<'new' | 'setup' | 'call' | 'ended'>();
+  const [displayName, setDisplayName] = useState<string>();
+
   const theme = useTheme();
   console.log(adapterArgs.args.locator);
   const args = useMemo(() => adapterArgs.args, [adapterArgs.args]);
-  const adapter = useAzureCommunicationCallAdapter(
-    { ...args, displayName: 'test' },
-    adapterArgs?.afterCreate ?? afterCreate
-  );
-  // console.log(adapter);
-  const [inCall, setInCall] = useState(false);
+  const adapter = useAzureCommunicationCallAdapter({ ...args, displayName }, adapterArgs?.afterCreate ?? afterCreate);
 
-  if (onCreateNewWindowExperience) {
+  if (onCreateNewWindowExperience && widgetState !== 'setup') {
     return (
-      <Stack styles={clickToCallContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
-        {onRenderLogo && onRenderLogo()}
-        {
-          <PrimaryButton
-            onClick={() => {
-              onCreateNewWindowExperience(adapterArgs.args);
-            }}
-          >
-            Start Call
-          </PrimaryButton>
-        }
+      <Stack
+        styles={clickToCallContainerStyles(theme)}
+        tokens={{ childrenGap: '1rem' }}
+        onClick={() => {
+          setWidgetState('setup');
+        }}
+      >
+        <Stack style={{ height: '5.3rem', width: '5rem', transform: 'scale(1.4)' }}>
+          {onRenderLogo && onRenderLogo()}
+        </Stack>
       </Stack>
     );
   }
 
+  if (widgetState === 'setup' && onCreateNewWindowExperience && onSetDisplayName) {
+    return (
+      <Stack styles={clickToCallContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
+        <Stack
+          tokens={{ childrenGap: '1rem' }}
+          style={{
+            margin: 'auto',
+            borderRadius: theme.effects.roundedCorner6,
+            background: kcupTheme.palette.themePrimary,
+            height: '5rem',
+            width: '10rem'
+          }}
+        >
+          {onRenderLogo && onRenderLogo()}
+          <IconButton iconProps={{ iconName: 'close' }} onClick={() => setWidgetState('new')}></IconButton>
+        </Stack>
+        <TextField
+          label={'Display Name'}
+          required={true}
+          placeholder={'Enter your name'}
+          onChange={(_, newValue) => {
+            console.log(newValue);
+            onSetDisplayName(newValue);
+            setDisplayName(newValue);
+          }}
+        />
+        <PrimaryButton
+          styles={startCallButtonStyles(kcupTheme)}
+          onClick={() => {
+            if (displayName) {
+              setWidgetState('call');
+              onSetDisplayName(displayName);
+              onCreateNewWindowExperience(adapterArgs.args);
+            }
+          }}
+        >
+          StartCall
+        </PrimaryButton>
+      </Stack>
+    );
+  }
   if (!adapter) {
     return (
       <Stack styles={clickToCallContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
-        {!inCall && onRenderLogo && onRenderLogo()}
+        {(widgetState === 'new' || widgetState === 'ended') && onRenderLogo && onRenderLogo()}
         <Stack.Item>{!adapter && <Spinner label="Getting you set up..." />}</Stack.Item>
       </Stack>
     );
@@ -93,8 +148,8 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
 
   return (
     <Stack styles={clickToCallContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
-      {!inCall && onRenderLogo && onRenderLogo()}
-      {inCall && adapter && (
+      {widgetState === 'call' && onRenderLogo && onRenderLogo()}
+      {widgetState === 'call' && adapter && (
         <CallComposite
           adapter={adapter}
           options={{
@@ -105,12 +160,13 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
               displayType: 'compact'
             }
           }}
+          fluentTheme={kcupTheme}
         />
       )}
-      {!inCall && adapter && (
+      {(widgetState === 'new' || widgetState === 'ended') && adapter && (
         <PrimaryButton
           onClick={() => {
-            setInCall(true);
+            setWidgetState('call');
             adapter.joinCall(true);
           }}
         >
@@ -132,7 +188,21 @@ const clickToCallContainerStyles = (theme: Theme): IStackStyles => {
       bottom: 0,
       right: '1rem',
       position: 'absolute',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      cursor: 'pointer'
+    }
+  };
+};
+
+const startCallButtonStyles = (theme: Theme): IButtonStyles => {
+  return {
+    root: {
+      background: theme.palette.themePrimary,
+      borderRadius: theme.effects.roundedCorner6,
+      borderColor: theme.palette.themePrimary
+    },
+    textContainer: {
+      color: theme.palette.white
     }
   };
 };

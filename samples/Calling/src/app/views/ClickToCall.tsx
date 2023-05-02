@@ -8,7 +8,6 @@ import { createAutoRefreshingCredential } from '../utils/credential';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { WEB_APP_TITLE } from '../utils/AppUtils';
 import { outboundTextField } from '../styles/HomeScreen.styles';
-import heroSVG from '../../assets/hero.svg';
 import { ClickToCallWidget } from './components/ClickToCallWidget';
 
 export interface ClickToCallPageProps {
@@ -21,27 +20,28 @@ export interface ClickToCallPageProps {
 }
 
 export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
-  const { token, userId, displayName, callLocator } = props;
+  const { token, userId, callLocator } = props;
 
   const credential = useMemo(() => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(userId), token);
   }, [token, userId]);
 
   const [participantIds, setParticipantIds] = useState<string[]>();
+  const [userDisplayName, setUserDisplayName] = useState<string>();
   const newWindowRef = React.useRef<Window | null>(null);
 
   // we also want to make this memoized version of the args for the new window.
   const adapterParams = useMemo(() => {
     const args = {
       userId: userId as CommunicationUserIdentifier,
-      displayName,
+      displayName: userDisplayName ?? 'displayName',
       credential,
       token,
       locator: participantIds ? { participantIds } : callLocator,
       alternateCallerId: '+15125186727'
     };
     return args;
-  }, [userId, displayName, credential, token, callLocator, participantIds]);
+  }, [userId, userDisplayName, credential, token, callLocator, participantIds]);
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -72,9 +72,22 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   }, [adapterParams]);
 
   return (
-    <Stack style={{ padding: '3rem' }} tokens={{ childrenGap: '1.5rem' }}>
-      <Stack>
-        <Text variant="xLarge">Welcome to a Click to Call sample</Text>
+    <Stack
+      style={{ height: '100%', width: '100%', padding: '3rem', background: '#ECE9E4' }}
+      tokens={{ childrenGap: '1.5rem' }}
+    >
+      <Stack style={{ margin: 'auto' }}>
+        <Stack style={{ padding: '3rem' }} horizontal tokens={{ childrenGap: '2rem' }}>
+          <Text style={{ marginTop: 'auto' }} variant="xLarge">
+            Welcome to a Click to Call sample
+          </Text>
+          <img
+            style={{ width: '7rem', height: 'auto' }}
+            src="https://images.keurig.com/is/image/keurig/Keurig_MadeWithLogo_Dark-1?scl=1&fmt=png-alpha"
+            alt="kcup logo"
+          />
+        </Stack>
+
         <Text>To start a call to a teams user or Call queue for customer support, you will need the following:</Text>
         <ul>
           <li>A teams test tennant session in a inPrivate browser</li>
@@ -91,16 +104,6 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           If you have any questions on how to use the app, or are looking for a teams test user reach out to Donald
           McEachern on teams, <b>alias</b>: dmceachern
         </Text>
-      </Stack>
-      <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden' }}>
-        <ClickToCallWidget
-          adapterArgs={{ args: adapterParams }}
-          onCreateNewWindowExperience={startNewWindow}
-          videoOptions={{ localVideo: false, remoteVideo: true }}
-          onRenderLogo={() => {
-            return <img src={heroSVG.toString()} alt="logo" />;
-          }}
-        />
         <Stack tokens={{ childrenGap: '1.5rem' }}>
           <TextField
             className={outboundTextField}
@@ -112,6 +115,23 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
             }}
           />
         </Stack>
+      </Stack>
+      <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden', margin: 'auto' }}>
+        <ClickToCallWidget
+          adapterArgs={{ args: adapterParams }}
+          onCreateNewWindowExperience={startNewWindow}
+          videoOptions={{ localVideo: false, remoteVideo: true }}
+          onRenderLogo={() => {
+            return (
+              <img
+                style={{ height: '4rem', width: '4rem', margin: 'auto' }}
+                src={'https://www.keurig.ca/maintenance/support/74-chat-tab-keurig.png'}
+                alt="logo"
+              />
+            );
+          }}
+          onSetDisplayName={setUserDisplayName}
+        />
       </Stack>
     </Stack>
   );

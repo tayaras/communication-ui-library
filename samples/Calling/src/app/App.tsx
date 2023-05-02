@@ -305,30 +305,30 @@ const getJoinParams = (locator: CallAdapterLocator): string => {
 
 export default App;
 
-export const drPepperTheme = createTheme({
+export const kcupTheme = createTheme({
   palette: {
-    themePrimary: '#e3d7ba',
-    themeLighterAlt: '#e6dbc1',
-    themeLighter: '#e9dfc8',
-    themeLight: '#ece4d0',
-    themeTertiary: '#efe8d7',
-    themeSecondary: '#f2ecdf',
-    themeDarkAlt: '#f5f1e6',
-    themeDark: '#f9f5ee',
-    themeDarker: '#fcfaf6',
-    neutralLighterAlt: '#9d1933',
-    neutralLighter: '#a11f39',
-    neutralLight: '#a82a43',
-    neutralQuaternaryAlt: '#ac3049',
-    neutralQuaternary: '#af364e',
-    neutralTertiaryAlt: '#bd5166',
-    neutralTertiary: '#ece4d0',
-    neutralSecondary: '#efe8d7',
-    neutralSecondaryAlt: '#efe8d7',
-    neutralPrimaryAlt: '#f2ecdf',
-    neutralPrimary: '#e3d7ba',
-    neutralDark: '#f9f5ee',
-    black: '#fcfaf6',
-    white: '#99122d'
+    themePrimary: '#3b2b2f',
+    themeLighterAlt: '#070506',
+    themeLighter: '#0d0a0b',
+    themeLight: '#140f10',
+    themeTertiary: '#1a1315',
+    themeSecondary: '#f6d8d2',
+    themeDarkAlt: '#271d1f',
+    themeDark: '#2e2124',
+    themeDarker: '#34262a',
+    neutralLighterAlt: '#eeebe7',
+    neutralLighter: '#efece8',
+    neutralLight: '#f0edea',
+    neutralQuaternaryAlt: '#f0eeeb',
+    neutralQuaternary: '#f1efeb',
+    neutralTertiaryAlt: '#f3f2ef',
+    neutralTertiary: '#140f10',
+    neutralSecondary: '#f3d1bd',
+    neutralSecondaryAlt: '#1a1315',
+    neutralPrimaryAlt: '#21181a',
+    neutralPrimary: '#3b2b2f',
+    neutralDark: '#2e2124',
+    black: '#34262a',
+    white: '#ece9e4'
   }
 });
