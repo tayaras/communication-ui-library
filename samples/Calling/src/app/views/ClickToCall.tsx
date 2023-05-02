@@ -3,11 +3,11 @@
 
 import { CommunicationUserIdentifier, MicrosoftTeamsUserIdentifier } from '@azure/communication-common';
 import { CallAdapterLocator, toFlatCommunicationIdentifier } from '@azure/communication-react';
-import { ChoiceGroup, IChoiceGroupOption, Stack, TextField, Text } from '@fluentui/react';
+import { Stack, TextField, Text } from '@fluentui/react';
 import { createAutoRefreshingCredential } from '../utils/credential';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { WEB_APP_TITLE } from '../utils/AppUtils';
-import { callOptionsGroupStyles, outboundTextField } from '../styles/HomeScreen.styles';
+import { outboundTextField } from '../styles/HomeScreen.styles';
 import heroSVG from '../../assets/hero.svg';
 import { ClickToCallWidget } from './components/ClickToCallWidget';
 
@@ -27,14 +27,9 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(userId), token);
   }, [token, userId]);
 
-  const clickToCallOptions: IChoiceGroupOption[] = [
-    { key: 'modal', text: 'start call in widget' },
-    { key: 'window', text: 'start call in new window' }
-  ];
-  const [chosenCallOption, setChosenCallOption] = useState<IChoiceGroupOption>(clickToCallOptions[0]);
   const [participantIds, setParticipantIds] = useState<string[]>();
   const newWindowRef = React.useRef<Window | null>(null);
-  const startCallWindow: boolean = chosenCallOption.key === 'window';
+
   // we also want to make this memoized version of the args for the new window.
   const adapterParams = useMemo(() => {
     const args = {
@@ -90,35 +85,17 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         </ul>
         <Text>
           Once you have logged in to teams with the test user. You can copy the Id into the participants field below and
-          click start call.
+          click <b>start call</b>.
         </Text>
-        <Text>The widget is set up in two configurations using the AzureCommunications Call Composite.</Text>
-        <ul>
-          <li>
-            If you select <b>start call in widget</b> you will have a audio only support call from the widget in the
-            corner
-          </li>
-          <li>
-            If you select <b>start call in new window</b> you will have a audio and video support call in a new window.
-            This use case will have configuration of devices for the local user.
-          </li>
-        </ul>
         <Text>
           If you have any questions on how to use the app, or are looking for a teams test user reach out to Donald
           McEachern on teams, <b>alias</b>: dmceachern
         </Text>
       </Stack>
       <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden' }}>
-        <ChoiceGroup
-          styles={callOptionsGroupStyles}
-          label="Choose how to start the call"
-          defaultSelectedKey={'modal'}
-          options={clickToCallOptions}
-          onChange={(_, option) => option && setChosenCallOption(option)}
-        />
         <ClickToCallWidget
           adapterArgs={{ args: adapterParams }}
-          onCreateNewWindowExperience={startCallWindow ? startNewWindow : undefined}
+          onCreateNewWindowExperience={startNewWindow}
           videoOptions={{ localVideo: false, remoteVideo: true }}
           onRenderLogo={() => {
             return <img src={heroSVG.toString()} alt="logo" />;
