@@ -121,6 +121,7 @@ class CallContext {
       /* @conditional-compile-remove(PSTN-calls) */ alternateCallerId: clientState.alternateCallerId,
       /* @conditional-compile-remove(unsupported-browser) */ environmentInfo: clientState.environmentInfo,
       /* @conditional-compile-remove(unsupported-browser) */ unsupportedBrowserVersionsAllowed: false,
+      transferTargetCallId: clientState.transferTargetCallId,
       /* @conditional-compile-remove(rooms) */ roleHint: options?.roleHint,
       /* @conditional-compile-remove(video-background-effects) */ videoBackgroundImages: options?.videoBackgroundImages,
       /* @conditional-compile-remove(video-background-effects) */ selectedVideoBackgroundEffect: undefined,
@@ -166,6 +167,10 @@ class CallContext {
     this.callId = callId;
   }
 
+  public setTransferTargetCallId(callId: string | undefined): void {
+    this.setState({ ...this.state, transferTargetCallId: callId });
+  }
+
   public onCallEnded(handler: (callEndedData: CallAdapterCallEndedEvent) => void): void {
     this.emitter.on('callEnded', handler);
   }
@@ -187,7 +192,8 @@ class CallContext {
     const newPage = getCallCompositePage(
       call,
       latestEndedCall,
-      /* @conditional-compile-remove(unsupported-browser) */ environmentInfo
+      /* @conditional-compile-remove(unsupported-browser) */ environmentInfo,
+      clientState.transferTargetCallId
     );
     if (!IsCallEndedPage(oldPage) && IsCallEndedPage(newPage)) {
       this.emitter.emit('callEnded', { callId: this.callId });
@@ -211,7 +217,8 @@ class CallContext {
           call?.localVideoStreams.find((s) => s.mediaStreamType === 'Video') ||
           clientState.deviceManager.unparentedViews.find((s) => s.mediaStreamType === 'Video')
             ? 'On'
-            : 'Off'
+            : 'Off',
+        transferTargetCallId: clientState.transferTargetCallId
       });
     }
   }
@@ -652,6 +659,7 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
   private processNewCall(call: CallCommon): void {
     this.call = call;
     this.context.setCurrentCallId(call.id);
+    this.context.setTransferTargetCallId(undefined);
 
     // Resync state after callId is set
     this.context.updateClientState(this.callClient.getState());

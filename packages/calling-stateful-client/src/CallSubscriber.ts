@@ -70,7 +70,7 @@ export class CallSubscriber {
       this._call.feature(Features.Transcription)
     );
     /* @conditional-compile-remove(teams-adhoc-call) */
-    this._transferCallSubscriber = new TransferCallSubscriber(this._call.feature(Features.Transfer));
+    this._transferCallSubscriber = new TransferCallSubscriber(this._context, this._call.feature(Features.Transfer));
     /* @conditional-compile-remove(video-background-effects) */
     this._localVideoStreamVideoEffectsSubscribers = new Map();
 

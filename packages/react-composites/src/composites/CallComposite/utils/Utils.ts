@@ -169,7 +169,8 @@ type GetCallCompositePageFunction = ((
 export const getCallCompositePage: GetCallCompositePageFunction = (
   call,
   previousCall?,
-  unsupportedBrowserInfo?
+  unsupportedBrowserInfo?,
+  transferTargetCallId?
 ): CallCompositePage => {
   /* @conditional-compile-remove(unsupported-browser) */
   if (
@@ -179,6 +180,10 @@ export const getCallCompositePage: GetCallCompositePageFunction = (
     )
   ) {
     return 'unsupportedEnvironment';
+  }
+
+  if (transferTargetCallId !== undefined && (call.id !== transferTargetCallId || call?.state !== 'Connected')) {
+    return 'transferring';
   }
 
   if (call) {
@@ -254,6 +259,7 @@ export const IsCallEndedPage = (
     | /* @conditional-compile-remove(rooms) */ 'roomNotFound'
     | /* @conditional-compile-remove(rooms) */ 'deniedPermissionToRoom'
     | /* @conditional-compile-remove(unsupported-browser) */ 'unsupportedEnvironment'
+    | /* @conditional-compile-remove(teams-adhoc-call) */ 'transferring'
 ): boolean => END_CALL_PAGES.includes(page);
 
 /**

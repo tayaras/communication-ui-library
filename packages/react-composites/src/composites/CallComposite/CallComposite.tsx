@@ -296,6 +296,9 @@ const MainScreen = (props: MainScreenProps): JSX.Element => {
         />
       );
       break;
+    case 'transferring':
+      pageElement = <>Transferring...</>;
+      break;
     case 'call':
       pageElement = (
         <CallPage

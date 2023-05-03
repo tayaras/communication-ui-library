@@ -168,6 +168,13 @@ export class CallContext {
     });
   }
 
+  public setTransferTargetCallId(callId?: string): void {
+    this.modifyState((draft: CallClientState) => {
+      console.log('DEBUG transferTargetCallId: ', callId);
+      draft.transferTargetCallId = callId;
+    });
+  }
+
   public removeCall(callId: string): void {
     this.modifyState((draft: CallClientState) => {
       delete draft.calls[this._callIdHistory.latestCallId(callId)];
@@ -197,6 +204,11 @@ export class CallContext {
       const call = draft.calls[this._callIdHistory.latestCallId(callId)];
       if (call) {
         call.state = state;
+      }
+      console.log(`DEBUG state: ${state}, call.id: ${call.id}, transferState: ${this._state.transferTargetCallId}`);
+      if (state === 'Connected' && call.id === this._state.transferTargetCallId) {
+        console.log('DEBUG TRANSFERRED!!!');
+        this.setTransferTargetCallId(undefined);
       }
     });
   }

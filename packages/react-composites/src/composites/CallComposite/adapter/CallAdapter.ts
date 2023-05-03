@@ -54,7 +54,8 @@ export type CallCompositePage =
   | /* @conditional-compile-remove(rooms) */ 'deniedPermissionToRoom'
   | 'removedFromCall'
   | /* @conditional-compile-remove(rooms) */ 'roomNotFound'
-  | /* @conditional-compile-remove(unsupported-browser) */ 'unsupportedEnvironment';
+  | /* @conditional-compile-remove(unsupported-browser) */ 'unsupportedEnvironment'
+  | /* @conditional-compile-remove(teams-adhoc-call) */ 'transferring';
 
 /**
  * Subset of CallCompositePages that represent an end call state.
@@ -108,6 +109,7 @@ export type CallAdapterClientState = {
    * Environment information about system the adapter is made on
    */
   environmentInfo?: EnvironmentInfo;
+  transferTargetCallId?: string;
   /* @conditional-compile-remove(rooms) */
   /**
    * Use this to hint the role of the user when the role is not available before a Rooms call is started. This value
