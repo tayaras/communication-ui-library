@@ -34,7 +34,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
   const adapterParams = useMemo(() => {
     const args = {
       userId: userId as CommunicationUserIdentifier,
-      displayName: userDisplayName ?? 'displayName',
+      displayName: userDisplayName ?? '',
       credential,
       token,
       locator: participantIds ? { participantIds } : callLocator,
@@ -60,7 +60,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
         newWindowRef.current?.postMessage(data, window.origin);
       }
     });
-  }, [adapterParams, adapterParams.locator]);
+  }, [adapterParams, adapterParams.locator, adapterParams.displayName]);
 
   const startNewWindow = useCallback(() => {
     const startNewSessionString = 'newSession=true';

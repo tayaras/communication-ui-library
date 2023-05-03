@@ -84,7 +84,7 @@ const App = (): JSX.Element => {
         return;
       }
       // console.log(event.data);
-      if ((event.data as AdapterArgs).userId) {
+      if ((event.data as AdapterArgs).userId && (event.data as AdapterArgs).displayName !== '') {
         console.log(event.data);
         setAdapterArgs(event.data as AdapterArgs);
       }
