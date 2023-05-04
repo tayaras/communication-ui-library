@@ -68,7 +68,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     newWindowRef.current = window.open(
       window.origin + `/?${startNewSessionString}`,
       WEB_APP_TITLE,
-      'width=300, height=550, left=500, top=500'
+      'width=400, height=550, left=500, top=500'
     );
   }, [adapterParams]);
 
