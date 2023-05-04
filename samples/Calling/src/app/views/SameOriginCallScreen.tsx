@@ -3,7 +3,6 @@
 
 import { CommunicationUserIdentifier } from '@azure/communication-common';
 import {
-  AvatarPersonaData,
   CallAdapter,
   CallAdapterLocator,
   CallComposite,
@@ -14,7 +13,6 @@ import { Spinner, Stack } from '@fluentui/react';
 import { WEB_APP_TITLE } from '../utils/AppUtils';
 import React, { useMemo } from 'react';
 import { createAutoRefreshingCredential } from '../utils/credential';
-import { kcupTheme } from '../App';
 
 export const SameOriginCallScreen = (props: {
   adapterArgs: {
@@ -62,11 +60,6 @@ export const SameOriginCallScreen = (props: {
 
   const adapter = useAzureCommunicationCallAdapter(args, afterCreate);
 
-  const onfetchAvatarPersonaData = async (userId: string): Promise<AvatarPersonaData> => {
-    return {
-      initialsColor: '#f3d1bd'
-    };
-  };
   if (!adapter) {
     document.title = `credentials - ${WEB_APP_TITLE}`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
@@ -78,8 +71,6 @@ export const SameOriginCallScreen = (props: {
           callControls: { moreButton: false, peopleButton: false, screenShareButton: false, displayType: 'compact' }
         }}
         adapter={adapter}
-        fluentTheme={kcupTheme}
-        onFetchAvatarPersonaData={onfetchAvatarPersonaData}
       />
     </Stack>
   );

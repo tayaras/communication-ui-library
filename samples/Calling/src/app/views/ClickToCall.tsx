@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { WEB_APP_TITLE } from '../utils/AppUtils';
 import { outboundTextField } from '../styles/HomeScreen.styles';
 import { ClickToCallWidget } from './components/ClickToCallWidget';
+import heroSVG from '../../assets/hero.svg';
 
 export interface ClickToCallPageProps {
   token: string;
@@ -67,13 +68,13 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
     newWindowRef.current = window.open(
       window.origin + `/?${startNewSessionString}`,
       WEB_APP_TITLE,
-      'width=500, height=450'
+      'width=300, height=550, left=500, top=500'
     );
   }, [adapterParams]);
 
   return (
     <Stack
-      style={{ height: '100%', width: '100%', padding: '3rem', background: '#ECE9E4' }}
+      style={{ height: '100%', width: '100%', padding: '3rem', background: '' }}
       tokens={{ childrenGap: '1.5rem' }}
     >
       <Stack style={{ margin: 'auto' }}>
@@ -81,11 +82,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           <Text style={{ marginTop: 'auto' }} variant="xLarge">
             Welcome to a Click to Call sample
           </Text>
-          <img
-            style={{ width: '7rem', height: 'auto' }}
-            src="https://images.keurig.com/is/image/keurig/Keurig_MadeWithLogo_Dark-1?scl=1&fmt=png-alpha"
-            alt="kcup logo"
-          />
+          <img style={{ width: '7rem', height: 'auto' }} src={heroSVG.toString()} alt="ACS Cat" />
         </Stack>
 
         <Text>To start a call to a teams user or Call queue for customer support, you will need the following:</Text>
@@ -118,16 +115,11 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
       </Stack>
       <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden', margin: 'auto' }}>
         <ClickToCallWidget
-          adapterArgs={{ args: adapterParams }}
           onCreateNewWindowExperience={startNewWindow}
           videoOptions={{ localVideo: false, remoteVideo: true }}
           onRenderLogo={() => {
             return (
-              <img
-                style={{ height: '4rem', width: '4rem', margin: 'auto' }}
-                src={'https://www.keurig.ca/maintenance/support/74-chat-tab-keurig.png'}
-                alt="logo"
-              />
+              <img style={{ height: '4rem', width: '4rem', margin: 'auto' }} src={heroSVG.toString()} alt="logo" />
             );
           }}
           onSetDisplayName={setUserDisplayName}

@@ -9,7 +9,7 @@ import { fromFlatCommunicationIdentifier } from '@azure/communication-react';
 /* @conditional-compile-remove(teams-identity-support) */
 import { MicrosoftTeamsUserIdentifier } from '@azure/communication-common';
 import { setLogLevel } from '@azure/logger';
-import { initializeIcons, PrimaryButton, Spinner, Stack, createTheme } from '@fluentui/react';
+import { initializeIcons, PrimaryButton, Spinner, Stack, createTheme, registerIcons } from '@fluentui/react';
 import { CallAdapterLocator } from '@azure/communication-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -39,6 +39,7 @@ import { PageOpenInAnotherTab } from './views/PageOpenInAnotherTab';
 import { UnsupportedBrowserPage } from './views/UnsupportedBrowserPage';
 import { ClickToCallPage } from './views/ClickToCall';
 import { SameOriginCallScreen } from './views/SameOriginCallScreen';
+import { Dismiss20Regular } from '@fluentui/react-icons';
 
 setLogLevel('warning');
 
@@ -47,6 +48,7 @@ console.log(
 );
 
 initializeIcons();
+registerIcons({ icons: { dismiss: <Dismiss20Regular /> } });
 
 type AppPages = 'home' | 'call' | 'click-to-call' | 'same-origin-call';
 
