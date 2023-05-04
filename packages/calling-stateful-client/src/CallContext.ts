@@ -195,6 +195,10 @@ export class CallContext {
           delete draft.callsEnded[findOldestCallEnded(draft.callsEnded)];
         }
         draft.callsEnded[latestCallId] = call;
+        if (call.id === this._state.transferTargetCallId) {
+          console.log('DEBUG TRANSFER CALL ENDED!!!');
+          draft.transferTargetCallId = undefined;
+        }
       }
     });
   }
@@ -204,11 +208,11 @@ export class CallContext {
       const call = draft.calls[this._callIdHistory.latestCallId(callId)];
       if (call) {
         call.state = state;
-      }
-      console.log(`DEBUG state: ${state}, call.id: ${call.id}, transferState: ${this._state.transferTargetCallId}`);
-      if (state === 'Connected' && call.id === this._state.transferTargetCallId) {
-        console.log('DEBUG TRANSFERRED!!!');
-        this.setTransferTargetCallId(undefined);
+        console.log(`DEBUG state: ${state}, call.id: ${call.id}, transferState: ${this._state.transferTargetCallId}`);
+        if (state === 'Connected' && call.id === this._state.transferTargetCallId) {
+          console.log('DEBUG TRANSFERRED!!!');
+          this.setTransferTargetCallId(undefined);
+        }
       }
     });
   }

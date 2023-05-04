@@ -189,6 +189,7 @@ class CallContext {
       environmentInfo: this.state.environmentInfo,
       unsupportedBrowserVersionOptedIn: this.state.unsupportedBrowserVersionsAllowed
     };
+    console.log('DEBUG clientState: ', clientState);
     const newPage = getCallCompositePage(
       call,
       latestEndedCall,
@@ -311,6 +312,13 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
         return;
       }
 
+      const cAgent = callAgent as CallAgent;
+      console.log('DEBUG cAgent.calls: ', cAgent.calls);
+      const newCall = cAgent.calls.find((call) => (call as Call).state === 'Connected');
+      if (newCall) {
+        console.log('DEBUG processing new call: ', newCall?.id);
+        this.processNewCall(newCall);
+      }
       // `updateClientState` searches for the current call from all the calls in the state using a cached `call.id`
       // from the call object. `call.id` can change during a call. We must update the cached `call.id` before
       // calling `updateClientState` so that we find the correct state object for the call even when `call.id`
@@ -318,13 +326,6 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
       // https://github.com/Azure/communication-ui-library/pull/1820
       if (this.call?.id) {
         this.context.setCurrentCallId(this.call.id);
-        const cAgent = callAgent as CallAgent;
-        console.log('DEBUG cAgent: ', cAgent);
-        const newCall = cAgent.calls.find((call) => (call as Call).state === 'Connected');
-        console.log('DEBUG newCall: ', newCall);
-        if (newCall) {
-          this.processNewCall(newCall);
-        }
       }
       this.context.updateClientState(clientState);
     };
