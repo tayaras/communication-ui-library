@@ -39,7 +39,7 @@ import { PageOpenInAnotherTab } from './views/PageOpenInAnotherTab';
 import { UnsupportedBrowserPage } from './views/UnsupportedBrowserPage';
 import { ClickToCallPage } from './views/ClickToCall';
 import { SameOriginCallScreen } from './views/SameOriginCallScreen';
-import { Dismiss20Regular } from '@fluentui/react-icons';
+import { CallAdd20Regular, Dismiss20Regular } from '@fluentui/react-icons';
 
 setLogLevel('warning');
 
@@ -48,7 +48,7 @@ console.log(
 );
 
 initializeIcons();
-registerIcons({ icons: { dismiss: <Dismiss20Regular /> } });
+registerIcons({ icons: { dismiss: <Dismiss20Regular />, callAdd: <CallAdd20Regular /> } });
 
 type AppPages = 'home' | 'call' | 'click-to-call' | 'same-origin-call';
 

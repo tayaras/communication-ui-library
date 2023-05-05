@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { IconButton, PrimaryButton, Stack, TextField, useTheme, Checkbox, Icon } from '@fluentui/react';
 import {
-  IButtonStyles,
-  IStackStyles,
-  IconButton,
-  PrimaryButton,
-  Stack,
-  TextField,
-  Theme,
-  useTheme
-} from '@fluentui/react';
+  clicktoCallSetupContainerStyles,
+  checkboxStyles,
+  startCallButtonStyles,
+  clickToCallContainerStyles,
+  callIconStyles,
+  logoContainerStyles,
+  collapseButtonStyles
+} from '../../styles/ClickToCallWidget.styles';
 import React from 'react';
 import { useState } from 'react';
 
@@ -46,44 +46,43 @@ export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element
 
   const [widgetState, setWidgetState] = useState<'new' | 'setup'>();
   const [displayName, setDisplayName] = useState<string>();
+  const [consentToData, setConsentToData] = useState<boolean>(false);
 
   const theme = useTheme();
 
   if (widgetState === 'setup' && onCreateNewWindowExperience && onSetDisplayName) {
     return (
-      <Stack styles={clickToCallContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
+      <Stack styles={clicktoCallSetupContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
         <IconButton
-          style={{
-            position: 'absolute',
-            top: '0.2rem',
-            right: '0.2rem'
-          }}
+          styles={collapseButtonStyles}
           iconProps={{ iconName: 'Dismiss' }}
           onClick={() => setWidgetState('new')}
         />
-        <Stack
-          tokens={{ childrenGap: '1rem' }}
-          style={{
-            margin: 'auto',
-            borderRadius: theme.effects.roundedCorner6,
-            height: '5rem',
-            width: '10rem'
-          }}
-        >
-          {onRenderLogo && onRenderLogo()}
+        <Stack tokens={{ childrenGap: '1rem' }} styles={logoContainerStyles}>
+          <Stack style={{ transform: 'scale(1.8)' }}>{onRenderLogo && onRenderLogo()}</Stack>
         </Stack>
         <TextField
-          label={'Display Name'}
+          label={'Name'}
           required={true}
           placeholder={'Enter your name'}
           onChange={(_, newValue) => {
             setDisplayName(newValue);
           }}
         />
+        <Checkbox
+          required={true}
+          styles={checkboxStyles(theme)}
+          label={
+            'by checking this box you are consenting that we will collect data from the call for customer support reasons'
+          }
+          onChange={(_, checked?: boolean | undefined) => {
+            setConsentToData(!!checked);
+          }}
+        ></Checkbox>
         <PrimaryButton
           styles={startCallButtonStyles(theme)}
           onClick={() => {
-            if (displayName) {
+            if (displayName && consentToData) {
               setWidgetState('new');
               onSetDisplayName(displayName);
               onCreateNewWindowExperience();
@@ -98,45 +97,20 @@ export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element
 
   return (
     <Stack
+      horizontalAlign="center"
+      verticalAlign="center"
       styles={clickToCallContainerStyles(theme)}
-      tokens={{ childrenGap: '1rem' }}
       onClick={() => {
         setWidgetState('setup');
       }}
     >
-      <Stack style={{ height: '5.3rem', width: '5rem', transform: 'scale(1.4)' }}>
-        {onRenderLogo && onRenderLogo()}
+      <Stack
+        horizontalAlign="center"
+        verticalAlign="center"
+        style={{ height: '4rem', width: '4rem', borderRadius: '50%', background: theme.palette.themePrimary }}
+      >
+        <Icon iconName="callAdd" styles={callIconStyles(theme)} />
       </Stack>
     </Stack>
   );
-};
-
-const clickToCallContainerStyles = (theme: Theme): IStackStyles => {
-  return {
-    root: {
-      minwidth: '16rem',
-      maxHeight: '20rem',
-      padding: '0.5rem',
-      boxShadow: theme.effects.elevation16,
-      borderRadius: theme.effects.roundedCorner6,
-      bottom: 0,
-      right: '1rem',
-      position: 'absolute',
-      overflow: 'hidden',
-      cursor: 'pointer'
-    }
-  };
-};
-
-const startCallButtonStyles = (theme: Theme): IButtonStyles => {
-  return {
-    root: {
-      background: theme.palette.themePrimary,
-      borderRadius: theme.effects.roundedCorner6,
-      borderColor: theme.palette.themePrimary
-    },
-    textContainer: {
-      color: theme.palette.white
-    }
-  };
 };

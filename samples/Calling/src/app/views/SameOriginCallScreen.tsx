@@ -10,7 +10,6 @@ import {
   useAzureCommunicationCallAdapter
 } from '@azure/communication-react';
 import { Spinner, Stack } from '@fluentui/react';
-import { WEB_APP_TITLE } from '../utils/AppUtils';
 import React, { useMemo } from 'react';
 import { createAutoRefreshingCredential } from '../utils/credential';
 
@@ -61,7 +60,7 @@ export const SameOriginCallScreen = (props: {
   const adapter = useAzureCommunicationCallAdapter(args, afterCreate);
 
   if (!adapter) {
-    document.title = `credentials - ${WEB_APP_TITLE}`;
+    document.title = `Thanks for Calling - Contoso Bank`;
     return <Spinner label={'Creating adapter'} ariaLive="assertive" labelPosition="top" />;
   }
   return (
