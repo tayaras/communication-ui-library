@@ -190,11 +190,14 @@ class CallContext {
       unsupportedBrowserVersionOptedIn: this.state.unsupportedBrowserVersionsAllowed
     };
     console.log('DEBUG clientState: ', clientState);
+    const transferCall = clientState.transferTargetCallId
+      ? findTransferCall(clientState.calls, clientState.transferTargetCallId)
+      : undefined;
     const newPage = getCallCompositePage(
       call,
       latestEndedCall,
       /* @conditional-compile-remove(unsupported-browser) */ environmentInfo,
-      clientState.transferTargetCallId
+      transferCall
     );
     if (!IsCallEndedPage(oldPage) && IsCallEndedPage(newPage)) {
       this.emitter.emit('callEnded', { callId: this.callId });
@@ -252,6 +255,14 @@ const findLatestEndedCall = (calls: { [key: string]: CallState }): CallState | u
     }
   }
   return latestCall;
+};
+
+const findTransferCall = (calls: { [key: string]: CallState }, transferTargetCallId: string): CallState | undefined => {
+  const callStates = Object.values(calls);
+  if (callStates.length === 0) {
+    return undefined;
+  }
+  return callStates.find((callState) => callState.id === transferTargetCallId);
 };
 
 /**

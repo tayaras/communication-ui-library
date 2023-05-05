@@ -170,7 +170,7 @@ export const getCallCompositePage: GetCallCompositePageFunction = (
   call,
   previousCall?,
   unsupportedBrowserInfo?,
-  transferTargetCallId?
+  transferCall?: CallState
 ): CallCompositePage => {
   /* @conditional-compile-remove(unsupported-browser) */
   if (
@@ -182,8 +182,18 @@ export const getCallCompositePage: GetCallCompositePageFunction = (
     return 'unsupportedEnvironment';
   }
 
-  if (transferTargetCallId !== undefined && (call.id !== transferTargetCallId || call?.state !== 'Connected')) {
-    return 'transferring';
+  if (transferCall !== undefined) {
+    if (call.id !== transferCall.id) {
+      if (['Ringing', 'Connected'].includes(transferCall.state)) {
+        return 'lobby';
+      }
+      return 'transferring';
+    } else if (call.state !== 'Connected') {
+      if (call.state === 'Ringing') {
+        return 'lobby';
+      }
+      return 'transferring';
+    }
   }
 
   if (call) {
