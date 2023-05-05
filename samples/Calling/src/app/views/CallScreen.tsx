@@ -160,7 +160,7 @@ const AzureCommunicationCallScreen = (props: AzureCommunicationCallScreenProps):
       },
       {
         key: 'ab7',
-        url: '/backgrounds/room4.jpg',
+        url: '/backgrounds/room444.jpg',
         tooltipText: 'Custom Background'
       }
     ];

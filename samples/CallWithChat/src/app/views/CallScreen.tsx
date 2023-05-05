@@ -74,7 +74,7 @@ export const CallScreen = (props: CallScreenProps): JSX.Element => {
       },
       {
         key: 'ab7',
-        url: '/backgrounds/room4.jpg',
+        url: '/backgrounds/room444.jpg',
         tooltipText: 'Custom Background'
       }
     ];
