@@ -195,7 +195,7 @@ export class CallContext {
           delete draft.callsEnded[findOldestCallEnded(draft.callsEnded)];
         }
         draft.callsEnded[latestCallId] = call;
-        if (call.id === this._state.transferTargetCallId) {
+        if (latestCallId === this._state.transferTargetCallId) {
           console.log('DEBUG TRANSFER CALL ENDED!!!');
           draft.transferTargetCallId = undefined;
         }
@@ -211,7 +211,7 @@ export class CallContext {
         console.log(`DEBUG state: ${state}, call.id: ${call.id}, transferState: ${this._state.transferTargetCallId}`);
         if (state === 'Connected' && call.id === this._state.transferTargetCallId) {
           console.log('DEBUG TRANSFERRED!!!');
-          this.setTransferTargetCallId(undefined);
+          draft.transferTargetCallId = undefined;
         }
       }
     });
