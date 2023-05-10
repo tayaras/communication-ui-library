@@ -21,8 +21,9 @@ export const SameOriginCallScreen = (props: {
     locator: CallAdapterLocator;
     alternateCallerId?: string;
   };
+  useVideo?: boolean;
 }): JSX.Element => {
-  const { adapterArgs } = props;
+  const { adapterArgs, useVideo } = props;
 
   const credential = useMemo(() => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(adapterArgs.userId), adapterArgs.token);
@@ -67,7 +68,14 @@ export const SameOriginCallScreen = (props: {
     <Stack styles={{ root: { height: '100vh', width: '100vw' } }}>
       <CallComposite
         options={{
-          callControls: { moreButton: false, peopleButton: false, displayType: 'compact' }
+          callControls: {
+            cameraButton: useVideo,
+            screenShareButton: useVideo,
+            moreButton: false,
+            peopleButton: false,
+            displayType: 'compact'
+          },
+          localVideoTileOptions: { position: !useVideo ? 'hidden' : 'floating' }
         }}
         adapter={adapter}
       />

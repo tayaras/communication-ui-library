@@ -71,6 +71,7 @@ const App = (): JSX.Element => {
   const [role, setRole] = useState<Role>();
 
   const [adapterArgs, setAdapterArgs] = useState<AdapterArgs | undefined>();
+  const [useVideo, setUseVideo] = useState<boolean>(false);
 
   /* @conditional-compile-remove(teams-identity-support) */
   const [isTeamsCall, setIsTeamsCall] = useState<boolean>(false);
@@ -90,7 +91,14 @@ const App = (): JSX.Element => {
       // console.log(event.data);
       if ((event.data as AdapterArgs).userId && (event.data as AdapterArgs).displayName !== '') {
         console.log(event.data);
-        setAdapterArgs(event.data as AdapterArgs);
+        setAdapterArgs({
+          userId: (event.data as AdapterArgs).userId as CommunicationUserIdentifier,
+          displayName: (event.data as AdapterArgs).displayName,
+          token: (event.data as AdapterArgs).token,
+          locator: (event.data as AdapterArgs).locator,
+          alternateCallerId: (event.data as AdapterArgs).alternateCallerId
+        });
+        setUseVideo(!!event.data.useVideo);
       }
     });
   }, []);
@@ -109,7 +117,7 @@ const App = (): JSX.Element => {
       console.log('starting session');
       setPage('same-origin-call');
     }
-  }, [adapterArgs]);
+  }, [adapterArgs, useVideo]);
 
   // Get Azure Communications Service token from the server
   useEffect(() => {
@@ -283,6 +291,7 @@ const App = (): JSX.Element => {
             locator: adapterArgs.locator,
             alternateCallerId: adapterArgs.alternateCallerId
           }}
+          useVideo={useVideo}
         />
       );
     }

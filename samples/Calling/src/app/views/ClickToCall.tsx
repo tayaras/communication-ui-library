@@ -29,6 +29,7 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
 
   const [participantIds, setParticipantIds] = useState<string[]>();
   const [userDisplayName, setUserDisplayName] = useState<string>();
+  const [useVideo, setUseVideo] = useState<boolean>(false);
   const newWindowRef = React.useRef<Window | null>(null);
 
   // we also want to make this memoized version of the args for the new window.
@@ -55,13 +56,14 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
           displayName: adapterParams.displayName,
           token: adapterParams.token,
           locator: adapterParams.locator,
-          alternateCallerId: adapterParams.alternateCallerId
+          alternateCallerId: adapterParams.alternateCallerId,
+          useVideo: useVideo
         };
         console.log(data);
         newWindowRef.current?.postMessage(data, window.origin);
       }
     });
-  }, [adapterParams, adapterParams.locator, adapterParams.displayName]);
+  }, [adapterParams, adapterParams.locator, adapterParams.displayName, useVideo]);
 
   const startNewWindow = useCallback(() => {
     const startNewSessionString = 'newSession=true';
@@ -116,13 +118,13 @@ export const ClickToCallPage = (props: ClickToCallPageProps): JSX.Element => {
       <Stack horizontal tokens={{ childrenGap: '1.5rem' }} style={{ overflow: 'hidden', margin: 'auto' }}>
         <ClickToCallWidget
           onCreateNewWindowExperience={startNewWindow}
-          videoOptions={{ localVideo: false, remoteVideo: true }}
           onRenderLogo={() => {
             return (
               <img style={{ height: '4rem', width: '4rem', margin: 'auto' }} src={heroSVG.toString()} alt="logo" />
             );
           }}
           onSetDisplayName={setUserDisplayName}
+          onSetUseVideo={setUseVideo}
         />
       </Stack>
     </Stack>

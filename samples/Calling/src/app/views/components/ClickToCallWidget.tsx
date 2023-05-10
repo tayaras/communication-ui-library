@@ -11,7 +11,7 @@ import {
   logoContainerStyles,
   collapseButtonStyles
 } from '../../styles/ClickToCallWidget.styles';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 
 export interface clickToCallComponentProps {
@@ -20,10 +20,6 @@ export interface clickToCallComponentProps {
    * will use the current window.
    */
   onCreateNewWindowExperience: (origin?: string, windowSize?: { height: number; width: number }) => void;
-  /**
-   *
-   */
-  videoOptions?: { localVideo: boolean; remoteVideo: boolean };
   /**
    * Custom render function for displaying logo.
    * @returns
@@ -35,6 +31,10 @@ export interface clickToCallComponentProps {
    * @returns
    */
   onSetDisplayName?: (displayName: string | undefined) => void;
+  /**
+   * Handler to set whether to use video in the call.
+   */
+  onSetUseVideo?: (useVideo: boolean) => void;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface clickToCallComponentProps {
  * @param props
  */
 export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element => {
-  const { onCreateNewWindowExperience, onRenderLogo, onSetDisplayName } = props;
+  const { onCreateNewWindowExperience, onRenderLogo, onSetDisplayName, onSetUseVideo } = props;
 
   const [widgetState, setWidgetState] = useState<'new' | 'setup'>();
   const [displayName, setDisplayName] = useState<string>();
@@ -50,7 +50,13 @@ export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element
 
   const theme = useTheme();
 
-  if (widgetState === 'setup' && onCreateNewWindowExperience && onSetDisplayName) {
+  useEffect(() => {
+    if (widgetState === 'new' && onSetUseVideo) {
+      onSetUseVideo(false);
+    }
+  }, [widgetState, onSetUseVideo]);
+
+  if (widgetState === 'setup' && onCreateNewWindowExperience && onSetDisplayName && onSetUseVideo) {
     return (
       <Stack styles={clicktoCallSetupContainerStyles(theme)} tokens={{ childrenGap: '1rem' }}>
         <IconButton
@@ -70,10 +76,17 @@ export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element
           }}
         />
         <Checkbox
+          styles={checkboxStyles(theme)}
+          label={'Use video - Checking this box will enable camera controls and screen sharing'}
+          onChange={(_, checked?: boolean | undefined) => {
+            onSetUseVideo(!!checked);
+          }}
+        ></Checkbox>
+        <Checkbox
           required={true}
           styles={checkboxStyles(theme)}
           label={
-            'by checking this box you are consenting that we will collect data from the call for customer support reasons'
+            'By checking this box you are consenting that we will collect data from the call for customer support reasons'
           }
           onChange={(_, checked?: boolean | undefined) => {
             setConsentToData(!!checked);
@@ -83,7 +96,6 @@ export const ClickToCallWidget = (props: clickToCallComponentProps): JSX.Element
           styles={startCallButtonStyles(theme)}
           onClick={() => {
             if (displayName && consentToData) {
-              setWidgetState('new');
               onSetDisplayName(displayName);
               onCreateNewWindowExperience();
             }
