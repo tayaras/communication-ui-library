@@ -30,8 +30,8 @@ process.env['COMMUNICATION_REACT_FLAVOR'] === 'stable' &&
         'data-loss-prevention',
         // Ability to upload/download files in message thread.
         'file-sharing',
-        // At mention feature
-        'at-mention',
+        // Mention feature
+        'mention',
         // feature for enabling new call control bar in CallComposite
         'new-call-control-bar',
         // 1 to N Calling feature.
@@ -58,7 +58,9 @@ process.env['COMMUNICATION_REACT_FLAVOR'] === 'stable' &&
         // feature for blurred background and replace background effects
         'video-background-effects',
         // feature for vertical gallery layouts in VideoGallery
-        'vertical-gallery'
+        'vertical-gallery',
+        // Feature for updates needed for Click to Call (C2C) scenarios
+        'click-to-call'
       ],
       // A list of stabilized features.
       // These features can be listed in the conditional compilation directives without
