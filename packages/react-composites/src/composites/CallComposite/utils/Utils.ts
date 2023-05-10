@@ -183,17 +183,7 @@ export const getCallCompositePage: GetCallCompositePageFunction = (
   }
 
   if (transferCall !== undefined) {
-    if (call.id !== transferCall.id) {
-      if (['Ringing', 'Connected'].includes(transferCall.state)) {
-        return 'lobby';
-      }
-      return 'transferring';
-    } else if (call.state !== 'Connected') {
-      if (call.state === 'Ringing') {
-        return 'lobby';
-      }
-      return 'transferring';
-    }
+    return 'transferring';
   }
 
   if (call) {

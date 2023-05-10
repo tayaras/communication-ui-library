@@ -34,6 +34,7 @@ import { HoldPage } from './pages/HoldPage';
 /* @conditional-compile-remove(unsupported-browser) */
 import { UnsupportedBrowserPage } from './pages/UnsupportedBrowser';
 import { PermissionConstraints } from '@azure/communication-calling';
+import { TransferPage } from './pages/TransferPage';
 
 /**
  * Props for {@link CallComposite}.
@@ -297,7 +298,7 @@ const MainScreen = (props: MainScreenProps): JSX.Element => {
       );
       break;
     case 'transferring':
-      pageElement = <>Transferring...</>;
+      pageElement = <TransferPage mobileView={props.mobileView} modalLayerHostId={props.modalLayerHostId} />;
       break;
     case 'call':
       pageElement = (

@@ -121,7 +121,6 @@ class CallContext {
       /* @conditional-compile-remove(PSTN-calls) */ alternateCallerId: clientState.alternateCallerId,
       /* @conditional-compile-remove(unsupported-browser) */ environmentInfo: clientState.environmentInfo,
       /* @conditional-compile-remove(unsupported-browser) */ unsupportedBrowserVersionsAllowed: false,
-      transferTargetCallId: clientState.transferTargetCallId,
       /* @conditional-compile-remove(rooms) */ roleHint: options?.roleHint,
       /* @conditional-compile-remove(video-background-effects) */ videoBackgroundImages: options?.videoBackgroundImages,
       /* @conditional-compile-remove(video-background-effects) */ selectedVideoBackgroundEffect: undefined,
@@ -167,8 +166,8 @@ class CallContext {
     this.callId = callId;
   }
 
-  public setTransferTargetCallId(callId: string | undefined): void {
-    this.setState({ ...this.state, transferTargetCallId: callId });
+  public setTransferTargetCallId(call: CallState | undefined): void {
+    this.setState({ ...this.state, transferTargetCall: call });
   }
 
   public onCallEnded(handler: (callEndedData: CallAdapterCallEndedEvent) => void): void {
@@ -190,15 +189,13 @@ class CallContext {
       unsupportedBrowserVersionOptedIn: this.state.unsupportedBrowserVersionsAllowed
     };
     console.log('DEBUG clientState: ', clientState);
-    const transferCall = clientState.transferTargetCallId
-      ? findTransferCall(clientState.calls, clientState.transferTargetCallId)
-      : undefined;
     const newPage = getCallCompositePage(
       call,
       latestEndedCall,
       /* @conditional-compile-remove(unsupported-browser) */ environmentInfo,
-      transferCall
+      this.state.transferTargetCall
     );
+    console.log('DEBUG getCallCompositePage: ', newPage);
     if (!IsCallEndedPage(oldPage) && IsCallEndedPage(newPage)) {
       this.emitter.emit('callEnded', { callId: this.callId });
       // Reset the callId to undefined as the call has ended.
@@ -208,6 +205,9 @@ class CallContext {
     }
 
     if (this.state.page) {
+      const transferCall = clientState.transferTargetCallId
+        ? findTransferCall(clientState.calls, clientState.transferTargetCallId)
+        : undefined;
       this.setState({
         ...this.state,
         userId: clientState.userId,
@@ -222,7 +222,7 @@ class CallContext {
           clientState.deviceManager.unparentedViews.find((s) => s.mediaStreamType === 'Video')
             ? 'On'
             : 'Off',
-        transferTargetCallId: clientState.transferTargetCallId
+        transferTargetCall: transferCall ? transferCall : this.state.transferTargetCall
       });
     }
   }
@@ -323,13 +323,6 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
         return;
       }
 
-      const cAgent = callAgent as CallAgent;
-      console.log('DEBUG cAgent.calls: ', cAgent.calls);
-      const newCall = cAgent.calls.find((call) => (call as Call).state === 'Connected');
-      if (newCall) {
-        console.log('DEBUG processing new call: ', newCall?.id);
-        this.processNewCall(newCall);
-      }
       // `updateClientState` searches for the current call from all the calls in the state using a cached `call.id`
       // from the call object. `call.id` can change during a call. We must update the cached `call.id` before
       // calling `updateClientState` so that we find the correct state object for the call even when `call.id`
@@ -338,6 +331,23 @@ export class AzureCommunicationCallAdapter<AgentType extends CallAgent | BetaTea
       if (this.call?.id) {
         this.context.setCurrentCallId(this.call.id);
       }
+
+      if (
+        this.call &&
+        this.context.getState().transferTargetCall?.id &&
+        this.call.id !== this.context.getState().transferTargetCall?.id
+      ) {
+        const cAgent = callAgent as CallAgent;
+        const transferCall = cAgent.calls.find(
+          (call) => call.id === this.context.getState().transferTargetCall?.id && call.state === 'Connected'
+        );
+        if (transferCall) {
+          this.processNewCall(transferCall);
+          this.context.setTransferTargetCallId(undefined);
+          console.log('DEBUG processing new call: ', transferCall?.id);
+        }
+      }
+
       this.context.updateClientState(clientState);
     };
 
