@@ -117,8 +117,6 @@ export const ClickToCallWidget = (props: clickToCallWidgetProps): JSX.Element =>
           required={true}
           placeholder={'Enter your name'}
           onChange={(_, newValue) => {
-            console.log(newValue);
-            onSetDisplayName(newValue);
             setDisplayName(newValue);
           }}
         />

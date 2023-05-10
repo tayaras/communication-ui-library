@@ -26,11 +26,31 @@ export const SameOriginCallScreen = (props: {
   };
 }): JSX.Element => {
   const { adapterArgs } = props;
-  const locator = adapterArgs.locator;
-  console.log(adapterArgs);
+
   const credential = useMemo(() => {
     return createAutoRefreshingCredential(toFlatCommunicationIdentifier(adapterArgs.userId), adapterArgs.token);
   }, [adapterArgs.token, adapterArgs.userId]);
+
+  const args = useMemo(() => {
+    return {
+      userId: adapterArgs.userId,
+      displayName: adapterArgs.displayName,
+      credential,
+      token: adapterArgs.token,
+      locator: adapterArgs.locator,
+      alternateCallerId: adapterArgs.alternateCallerId
+    };
+  }, [
+    adapterArgs.userId,
+    adapterArgs.displayName,
+    credential,
+    adapterArgs.token,
+    adapterArgs.locator,
+    adapterArgs.alternateCallerId
+  ]);
+
+  console.log(args);
+
   const afterCreate = (adapter: CallAdapter): Promise<CallAdapter> => {
     adapter.on('callEnded', () => {
       adapter.dispose();
@@ -39,7 +59,8 @@ export const SameOriginCallScreen = (props: {
     adapter.joinCall(true);
     return new Promise((resolve, reject) => resolve(adapter));
   };
-  const adapter = useAzureCommunicationCallAdapter({ ...adapterArgs, locator, credential }, afterCreate);
+
+  const adapter = useAzureCommunicationCallAdapter(args, afterCreate);
 
   const onfetchAvatarPersonaData = async (userId: string): Promise<AvatarPersonaData> => {
     return {
