@@ -58,6 +58,7 @@ export interface MediaGalleryProps {
   drawerMenuHostId?: string;
   /* @conditional-compile-remove(pinned-participants) */
   remoteVideoTileMenuOptions?: RemoteVideoTileMenuOptions;
+  setColorForEachUser?: (color: string, name: string) => void;
 }
 
 /**
@@ -123,7 +124,7 @@ export const MediaGallery = (props: MediaGalleryProps): JSX.Element => {
         localVideoViewOptions={localVideoViewOptions}
         remoteVideoViewOptions={remoteVideoViewOptions}
         styles={VideoGalleryStyles}
-        layout="floatingLocalVideo"
+        layout="default"
         showCameraSwitcherInLocalPreview={props.isMobile}
         localVideoCameraCycleButtonProps={cameraSwitcherProps}
         onRenderAvatar={onRenderAvatar}
@@ -131,6 +132,7 @@ export const MediaGallery = (props: MediaGalleryProps): JSX.Element => {
         remoteVideoTileMenuOptions={remoteVideoTileMenuOptions}
         /* @conditional-compile-remove(vertical-gallery) */
         overflowGalleryPosition={overflowGalleryPosition}
+        setColorForEachUser={props.setColorForEachUser}
       />
     );
   }, [
@@ -139,7 +141,8 @@ export const MediaGallery = (props: MediaGalleryProps): JSX.Element => {
     onRenderAvatar,
     cameraSwitcherProps,
     /* @conditional-compile-remove(pinned-participants) */ remoteVideoTileMenuOptions,
-    /* @conditional-compile-remove(vertical-gallery) */ overflowGalleryPosition
+    /* @conditional-compile-remove(vertical-gallery) */ overflowGalleryPosition,
+    props.setColorForEachUser
   ]);
 
   return (

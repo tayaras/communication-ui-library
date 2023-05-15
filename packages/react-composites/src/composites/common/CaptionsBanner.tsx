@@ -26,10 +26,10 @@ import { useLocale } from '../localization';
 /* @conditional-compile-remove(close-captions) */
 const mobileViewBannerWidth = '90%';
 /* @conditional-compile-remove(close-captions) */
-const desktopViewBannerWidth = '50%';
+const desktopViewBannerWidth = '600px';
 
 /** @private */
-export const CaptionsBanner = (props: { isMobile: boolean }): JSX.Element => {
+export const CaptionsBanner = (props: { isMobile: boolean; userColorList: {} }): JSX.Element => {
   /* @conditional-compile-remove(close-captions) */
   const captionsBannerProps = useAdaptedSelector(_captionsBannerSelector);
   /* @conditional-compile-remove(close-captions) */
@@ -77,14 +77,19 @@ export const CaptionsBanner = (props: { isMobile: boolean }): JSX.Element => {
         <div className={containerClassName}>
           <Stack horizontalAlign="center">
             <Stack.Item style={{ width: props.isMobile ? mobileViewBannerWidth : desktopViewBannerWidth }}>
-              <_CaptionsBanner {...captionsBannerProps} {...handlers} strings={captionsBannerStrings} />
+              <_CaptionsBanner
+                {...captionsBannerProps}
+                {...handlers}
+                strings={captionsBannerStrings}
+                userColorList={props.userColorList}
+              />
             </Stack.Item>
           </Stack>
-          {!props.isMobile && captionsBannerProps.isCaptionsOn && (
+          {/* {!props.isMobile && captionsBannerProps.isCaptionsOn && (
             <div className={floatingChildClassName}>
               <CaptionsBannerMoreButton onCaptionsSettingsClick={onClickCaptionsSettings} />
             </div>
-          )}
+          )} */}
         </div>
       }
     </>

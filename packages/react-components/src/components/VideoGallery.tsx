@@ -243,6 +243,8 @@ export interface VideoGalleryProps {
    * @defaultValue 'HorizontalBottom'
    */
   overflowGalleryPosition?: OverflowGalleryPosition;
+
+  setColorForEachUser?: (color: string, name: string) => void;
 }
 
 /* @conditional-compile-remove(pinned-participants) */
@@ -309,7 +311,8 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
     /* @conditional-compile-remove(pinned-participants) */
     remoteVideoTileMenuOptions = DEFAULT_REMOTE_VIDEO_TILE_MENU_OPTIONS,
     /* @conditional-compile-remove(vertical-gallery) */
-    overflowGalleryPosition = 'HorizontalBottom'
+    overflowGalleryPosition = 'HorizontalBottom',
+    setColorForEachUser
   } = props;
 
   const ids = useIdentifiers();
@@ -372,6 +375,12 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
 
     const initialsName = !localParticipant.displayName ? '' : localParticipant.displayName;
 
+    const setColor = (color: string) => {
+      if (setColorForEachUser) {
+        setColorForEachUser(color, localParticipant.userId);
+      }
+    };
+
     return (
       <Stack key="local-video-tile-key" tabIndex={0} aria-label={strings.localVideoMovementLabel} role={'dialog'}>
         <_LocalVideoTile
@@ -392,6 +401,7 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
           localVideoCameraSwitcherLabel={strings.localVideoCameraSwitcherLabel}
           localVideoSelectedDescription={strings.localVideoSelectedDescription}
           styles={localVideoTileStyles}
+          setColor={setColor}
         />
       </Stack>
     );
@@ -413,7 +423,8 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
     strings.localVideoSelectedDescription,
     styles?.localVideo,
     theme.effects.roundedCorner4,
-    /* @conditional-compile-remove(rooms) */ permissions.cameraButton
+    /* @conditional-compile-remove(rooms) */ permissions.cameraButton,
+    setColorForEachUser
   ]);
 
   /* @conditional-compile-remove(pinned-participants) */
@@ -464,6 +475,14 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
       /* @conditional-compile-remove(pinned-participants) */
       const isPinned = pinnedParticipants?.includes(participant.userId);
 
+      const name = participant.userId ?? '';
+
+      const setColor = (color: string) => {
+        if (setColorForEachUser) {
+          setColorForEachUser(color, name);
+        }
+      };
+
       return (
         <_RemoteVideoTile
           key={participant.userId}
@@ -500,6 +519,7 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
           disablePinMenuItem={pinnedParticipants.length >= MAX_PINNED_REMOTE_VIDEO_TILES}
           /* @conditional-compile-remove(pinned-participants) */
           toggleAnnouncerString={toggleAnnouncerString}
+          setColor={setColor}
         />
       );
     },
@@ -515,7 +535,8 @@ export const VideoGallery = (props: VideoGalleryProps): JSX.Element => {
       /* @conditional-compile-remove(pinned-participants) */ pinnedParticipants,
       /* @conditional-compile-remove(pinned-participants) */ onPinParticipant,
       /* @conditional-compile-remove(pinned-participants) */ onUnpinParticipant,
-      /* @conditional-compile-remove(pinned-participants) */ toggleAnnouncerString
+      /* @conditional-compile-remove(pinned-participants) */ toggleAnnouncerString,
+      setColorForEachUser
     ]
   );
 

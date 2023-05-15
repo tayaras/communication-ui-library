@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { IContextualMenuProps, Layer, Stack } from '@fluentui/react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 /* @conditional-compile-remove(pinned-participants) */
 import { KeyboardEvent, useCallback } from 'react';
 import {
@@ -57,6 +57,7 @@ export const _RemoteVideoTile = React.memo(
     isPinned?: boolean;
     disablePinMenuItem?: boolean;
     toggleAnnouncerString?: (announcerString: string) => void;
+    setColor?: (color: string) => void;
   }) => {
     const {
       isAvailable,
@@ -79,6 +80,17 @@ export const _RemoteVideoTile = React.memo(
       toggleAnnouncerString,
       strings
     } = props;
+
+    const [bgColor, setBgColor] = useState('');
+
+    const setColor = (color: string) => {
+      if (props.setColor) {
+        props.setColor(color);
+      }
+      if (color !== '#000000' && bgColor === '') {
+        setBgColor(color);
+      }
+    };
 
     const remoteVideoStreamProps: RemoteVideoStreamLifecycleMaintainerProps = useMemo(
       () => ({
@@ -140,9 +152,13 @@ export const _RemoteVideoTile = React.memo(
       }
 
       return (
-        <StreamMedia videoStreamElement={renderElement} loadingState={showLoadingIndicator ? 'loading' : 'none'} />
+        <StreamMedia
+          videoStreamElement={renderElement}
+          loadingState={showLoadingIndicator ? 'loading' : 'none'}
+          setColor={setColor}
+        />
       );
-    }, [renderElement, showLoadingIndicator]);
+    }, [renderElement, showLoadingIndicator, setColor]);
 
     /* @conditional-compile-remove(pinned-participants) */
     const onKeyDown = useCallback(
@@ -165,6 +181,7 @@ export const _RemoteVideoTile = React.memo(
         style={remoteVideoTileWrapperStyle}
       >
         <VideoTile
+          color={bgColor}
           key={userId}
           userId={userId}
           initialsName={remoteParticipant.displayName ?? ''}

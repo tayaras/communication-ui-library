@@ -84,6 +84,7 @@ export interface CallArrangementProps {
   onFetchAvatarPersonaData?: AvatarPersonaDataCallback;
   updateSidePaneRenderer: (renderer: SidePaneRenderer | undefined) => void;
   mobileChatTabHeader?: MobileChatSidePaneTabHeaderProps;
+  userColorList: {};
 }
 
 /**
@@ -318,14 +319,16 @@ export const CallArrangement = (props: CallArrangementProps): JSX.Element => {
                       <MutedNotification {...props.mutedNotificationProps} />
                     )}
                   </Stack.Item>
-                  {props.onRenderGalleryContent && props.onRenderGalleryContent()}
+
                   {
                     /* @conditional-compile-remove(close-captions) */
                     true &&
                       /* @conditional-compile-remove(PSTN-calls) */ /* @conditional-compile-remove(one-to-n-calling) */ !isInLocalHold && (
-                        <CaptionsBanner isMobile={props.mobileView} />
+                        <CaptionsBanner isMobile={props.mobileView} userColorList={props.userColorList} />
                       )
                   }
+
+                  {props.onRenderGalleryContent && props.onRenderGalleryContent()}
                 </Stack>
               </Stack.Item>
             </Stack.Item>

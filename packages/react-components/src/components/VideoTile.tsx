@@ -62,6 +62,7 @@ export interface VideoTileStylesProps extends BaseCustomStyles {
  * @public
  */
 export interface VideoTileProps {
+  color?: string;
   /** React Child components. Child Components will show as overlay component in the VideoTile. */
   children?: React.ReactNode;
   /**
@@ -381,13 +382,9 @@ export const VideoTile = (props: VideoTileProps): JSX.Element => {
 
         {(canShowLabel || participantStateString) && (
           <Stack horizontal className={tileInfoContainerStyle} tokens={tileInfoContainerTokens}>
-            <Stack horizontal className={tileInfoStyle}>
+            <Stack horizontal className={tileInfoStyle} style={{ backgroundColor: props.color, borderRadius: '3px' }}>
               {canShowLabel && (
-                <Text
-                  className={mergeStyles(displayNameStyle)}
-                  title={displayName}
-                  style={{ color: participantStateString ? theme.palette.neutralSecondary : 'inherit' }}
-                >
+                <Text className={mergeStyles(displayNameStyle)} title={displayName} style={{ color: 'white' }}>
                   {displayName}
                 </Text>
               )}

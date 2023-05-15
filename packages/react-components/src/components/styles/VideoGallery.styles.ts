@@ -7,7 +7,13 @@ import { _pxToRem } from '@internal/acs-ui-common';
 /**
  * @private
  */
-export const videoGalleryOuterDivStyle = mergeStyles({ position: 'relative', width: '100%', height: '100%' });
+export const videoGalleryOuterDivStyle = mergeStyles({
+  position: 'relative',
+  width: '80%',
+  height: '100%',
+  margin: 'auto',
+  textAlign: 'center'
+});
 
 /**
  * @private

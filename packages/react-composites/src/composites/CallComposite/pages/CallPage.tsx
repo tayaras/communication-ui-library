@@ -5,7 +5,7 @@ import { DiagnosticQuality } from '@azure/communication-calling';
 import { useId } from '@fluentui/react-hooks';
 import { _isInCall } from '@internal/calling-component-bindings';
 import { ErrorBar, OnRenderAvatarCallback, ParticipantMenuItemsCallback } from '@internal/react-components';
-import React from 'react';
+import React, { useState } from 'react';
 import { AvatarPersonaDataCallback } from '../../common/AvatarPersona';
 import { useLocale } from '../../localization';
 import { CallCompositeOptions } from '../CallComposite';
@@ -69,8 +69,17 @@ export const CallPage = (props: CallPageProps): JSX.Element => {
 
   const drawerMenuHostId = useId('drawerMenuHost');
 
+  const [userColorList, setUserColorList] = useState({});
+
+  const setColorForEachUser = (color: string, name: string) => {
+    if (!userColorList[name] && color !== '#000000') {
+      setUserColorList({ ...userColorList, [name]: color });
+    }
+  };
+
   return (
     <CallArrangement
+      userColorList={userColorList}
       id={drawerMenuHostId}
       complianceBannerProps={{ ...complianceBannerProps, strings }}
       // Ignore errors from before current call. This avoids old errors from showing up when a user re-joins a call.
@@ -98,6 +107,7 @@ export const CallPage = (props: CallPageProps): JSX.Element => {
               /* @conditional-compile-remove(pinned-participants) */
               remoteVideoTileMenuOptions={options?.remoteVideoTileMenu}
               drawerMenuHostId={drawerMenuHostId}
+              setColorForEachUser={setColorForEachUser}
             />
           ) : (
             <NetworkReconnectTile {...networkReconnectTileProps} />

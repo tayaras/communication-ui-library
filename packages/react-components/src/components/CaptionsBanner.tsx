@@ -47,6 +47,7 @@ export interface _CaptionsBannerProps {
    */
   onRenderAvatar?: OnRenderAvatarCallback;
   strings?: _CaptionsBannerStrings;
+  userColorList: {};
 }
 
 /**
@@ -54,7 +55,7 @@ export interface _CaptionsBannerProps {
  * A component for displaying a CaptionsBanner with user icon, displayName and captions text.
  */
 export const _CaptionsBanner = (props: _CaptionsBannerProps): JSX.Element => {
-  const { captions, isCaptionsOn, startCaptionsInProgress, onRenderAvatar, strings } = props;
+  const { captions, isCaptionsOn, startCaptionsInProgress, onRenderAvatar, strings, userColorList } = props;
   const captionsScrollDivRef = useRef<HTMLElement>(null);
   const [isAtBottomOfScroll, setIsAtBottomOfScroll] = useState<boolean>(true);
 
@@ -97,11 +98,15 @@ export const _CaptionsBanner = (props: _CaptionsBannerProps): JSX.Element => {
         <FocusZone as="ul" className={captionsContainerClassName}>
           {isCaptionsOn && (
             <Ref innerRef={captionsScrollDivRef}>
-              <Stack verticalAlign="start" className={captionsBannerClassName}>
+              <Stack verticalAlign="end" className={captionsBannerClassName}>
                 {captions.map((caption) => {
                   return (
                     <div key={caption.id} className={captionContainerClassName} data-is-focusable={true}>
-                      <_Caption {...caption} onRenderAvatar={onRenderAvatar} />
+                      <_Caption
+                        {...caption}
+                        onRenderAvatar={onRenderAvatar}
+                        color={userColorList[caption.userId ?? '']}
+                      />
                     </div>
                   );
                 })}

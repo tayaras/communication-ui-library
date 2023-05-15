@@ -25,10 +25,15 @@ export const displayNameClassName = mergeStyles({
  * @private
  */
 export const captionClassName = mergeStyles({
-  fontWeight: 400,
-  fontSize: _pxToRem(16),
+  fontWeight: 600,
+  fontSize: _pxToRem(20),
   lineHeight: _pxToRem(22),
-  width: '100%'
+  width: '100%',
+  borderRadius: '3px',
+  color: 'white',
+  minHeight: '30px',
+  padding: '12px',
+  marginTop: '5px'
 });
 
 /**
@@ -52,7 +57,8 @@ export const captionContainerClassName = mergeStyles({
  * @private
  */
 export const captionsBannerClassName = mergeStyles({
-  height: _pxToRem(100),
+  height: _pxToRem(700),
+  margin: '10px',
   overflowY: 'auto',
   overflowX: 'hidden',
   ...scrollbarStyles
@@ -62,7 +68,7 @@ export const captionsBannerClassName = mergeStyles({
  * @private
  */
 export const loadingBannerClassName = mergeStyles({
-  height: _pxToRem(100)
+  height: _pxToRem(700)
 });
 
 /**

@@ -7,5 +7,8 @@
   },
   "bugs": {
     "url": "https://github.com/Azure/communication-ui-library/issues/new/choose"
+  },
+  "dependencies": {
+    "colorthief": "^2.4.0"
   }
 }

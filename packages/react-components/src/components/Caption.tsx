@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IPersona, Persona, Stack, PersonaSize, Text } from '@fluentui/react';
+import { Stack, Text } from '@fluentui/react';
 import React from 'react';
 import { _FileUploadCardsStrings } from './FileUploadCards';
 import { OnRenderAvatarCallback } from '../types';
@@ -8,8 +8,7 @@ import {
   captionClassName,
   captionsContentContainerClassName,
   displayNameClassName,
-  displayNameContainerClassName,
-  iconClassName
+  displayNameContainerClassName
 } from './styles/Captions.style';
 import { _CaptionsInfo } from './CaptionsBanner';
 
@@ -24,6 +23,7 @@ export interface _CaptionProps extends _CaptionsInfo {
    * @param userId - user Id
    */
   onRenderAvatar?: OnRenderAvatarCallback;
+  color: string;
 }
 
 /**
@@ -31,35 +31,20 @@ export interface _CaptionProps extends _CaptionsInfo {
  * A component for displaying a single line of caption
  */
 export const _Caption = (props: _CaptionProps): JSX.Element => {
-  const { displayName, userId, captionText, onRenderAvatar } = props;
-
-  const personaOptions: IPersona = {
-    hidePersonaDetails: true,
-    size: PersonaSize.size32,
-    text: displayName,
-    showOverflowTooltip: false,
-    initialsTextColor: 'white',
-    styles: {
-      root: {
-        margin: '0.25rem'
-      }
-    }
-  };
-
-  const userIcon = onRenderAvatar ? onRenderAvatar(userId ?? '', personaOptions) : <Persona {...personaOptions} />;
+  const { displayName, captionText, color } = props;
 
   return (
-    <Stack horizontal verticalAlign="start" horizontalAlign="start">
-      <Stack.Item className={iconClassName}>{userIcon}</Stack.Item>
+    // <Stack horizontal verticalAlign="start" horizontalAlign="start">
+    //   {/* <Stack.Item className={iconClassName}>{userIcon}</Stack.Item> */}
 
-      <Stack verticalAlign="start" className={captionsContentContainerClassName}>
-        <Stack.Item className={displayNameContainerClassName}>
-          <Text className={displayNameClassName}>{displayName}</Text>
-        </Stack.Item>
-        <Stack.Item className={captionClassName} dir="auto">
-          {captionText}
-        </Stack.Item>
-      </Stack>
+    <Stack verticalAlign="start" className={captionsContentContainerClassName}>
+      <Stack.Item className={displayNameContainerClassName}>
+        <Text className={displayNameClassName}>{displayName}</Text>
+      </Stack.Item>
+      <Stack.Item className={captionClassName} dir="auto" style={{ backgroundColor: color, width: 'fit-content' }}>
+        {captionText}
+      </Stack.Item>
     </Stack>
+    // </Stack>
   );
 };

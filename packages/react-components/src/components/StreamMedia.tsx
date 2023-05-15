@@ -12,6 +12,7 @@ import {
 } from './styles/StreamMedia.styles';
 import { useTheme } from '../theming';
 import { BaseCustomStyles } from '../types';
+import ColorThief from 'colorthief';
 
 /**
  * Whether the stream is loading or not.
@@ -39,6 +40,7 @@ export interface StreamMediaProps {
    * ```
    */
   styles?: BaseCustomStyles;
+  setColor?: (color: string) => void;
 }
 
 /**
@@ -54,6 +56,8 @@ export const StreamMedia = (props: StreamMediaProps): JSX.Element => {
 
   const { isMirrored, videoStreamElement, styles, loadingState = 'none' } = props;
   const [pipEnabled, setPipEnabled] = useState(false);
+
+  const [videoColor, setVideoColor] = useState('#000000');
 
   useEffect(() => {
     const container = containerEl.current;
@@ -82,21 +86,63 @@ export const StreamMedia = (props: StreamMediaProps): JSX.Element => {
     };
   }, [videoStreamElement]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      const video = videoStreamElement?.getElementsByTagName('video')[0];
+      var canvas: any = document.createElement('canvas');
+
+      var photo: any = document.createElement('img');
+
+      if (canvas && video) {
+        canvas.width = video.clientWidth;
+        canvas.height = video.clientHeight;
+
+        canvas.getContext('2d').drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+        const data = canvas.toDataURL('image/png');
+        photo.setAttribute('src', data);
+        const colorThief = new ColorThief();
+
+        photo.addEventListener('load', function () {
+          const color = colorThief.getColor(photo);
+          setVideoColor(rgbToHex(color[0], color[1], color[2]));
+        });
+      }
+    }, 3000);
+  }, [videoStreamElement]);
+
+  useEffect(() => {
+    if (props.setColor) {
+      props.setColor(videoColor);
+    }
+  }, [videoColor]);
+
   return (
-    <div className={container()}>
-      <div
-        data-ui-id="stream-media-container"
-        className={mergeStyles(
-          isMirrored && pipEnabled ? invertedVideoInPipStyle(theme) : mediaContainer(theme),
-          styles?.root
+    <>
+      {/* <div style={{width: '100px', height: '100px', position: 'absolute',backgroundColor: videoColor, zIndex: 999}}></div> */}
+      <div className={container()}>
+        <div
+          data-ui-id="stream-media-container"
+          className={mergeStyles(
+            isMirrored && pipEnabled ? invertedVideoInPipStyle(theme) : mediaContainer(theme),
+            styles?.root
+          )}
+          ref={containerEl}
+        />
+        {loadingState === 'loading' && (
+          <div className={loadingSpinnerContainer()}>
+            <Spinner data-ui-id="stream-media-loading-spinner" styles={loadSpinnerStyles} />
+          </div>
         )}
-        ref={containerEl}
-      />
-      {loadingState === 'loading' && (
-        <div className={loadingSpinnerContainer()}>
-          <Spinner data-ui-id="stream-media-loading-spinner" styles={loadSpinnerStyles} />
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
+
+const rgbToHex = (r, g, b) =>
+  '#' +
+  [r, g, b]
+    .map((x) => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    })
+    .join('');

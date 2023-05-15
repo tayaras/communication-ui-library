@@ -3,7 +3,7 @@
 
 import { Stack } from '@fluentui/react';
 import { _formatString } from '@internal/acs-ui-common';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { OnRenderAvatarCallback, VideoStreamOptions, CreateVideoStreamViewResult } from '../types';
 import { LocalVideoCameraCycleButton, LocalVideoCameraCycleButtonProps } from './LocalVideoCameraButton';
 import { StreamMedia } from './StreamMedia';
@@ -38,6 +38,7 @@ export const _LocalVideoTile = React.memo(
     localVideoSelectedDescription?: string;
     styles?: VideoTileStylesProps;
     personaMinSize?: number;
+    setColor?: (color: string) => void;
   }) => {
     const {
       isAvailable,
@@ -58,6 +59,17 @@ export const _LocalVideoTile = React.memo(
       localVideoCameraSwitcherLabel,
       localVideoSelectedDescription
     } = props;
+
+    const [bgColor, setBgColor] = useState('');
+
+    const setColor = (color: string) => {
+      if (props.setColor) {
+        props.setColor(color);
+      }
+      if (color !== '#000000' && bgColor === '') {
+        setBgColor(color);
+      }
+    };
 
     const localVideoStreamProps: LocalVideoStreamLifecycleMaintainerProps = useMemo(
       () => ({
@@ -97,7 +109,7 @@ export const _LocalVideoTile = React.memo(
             localVideoCameraSwitcherLabel={localVideoCameraSwitcherLabel}
             localVideoSelectedDescription={localVideoSelectedDescription}
           />
-          <StreamMedia videoStreamElement={renderElement} isMirrored={true} />
+          <StreamMedia videoStreamElement={renderElement} isMirrored={true} setColor={setColor} />
         </>
       );
     }, [
@@ -105,6 +117,7 @@ export const _LocalVideoTile = React.memo(
       localVideoCameraSwitcherLabel,
       localVideoSelectedDescription,
       renderElement,
+      setColor,
       showCameraSwitcherInLocalPreview
     ]);
 
@@ -121,6 +134,7 @@ export const _LocalVideoTile = React.memo(
         isMuted={isMuted}
         showMuteIndicator={showMuteIndicator}
         personaMinSize={props.personaMinSize}
+        color={bgColor}
       />
     );
   }
