@@ -1,14 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IStyle, Persona, Spinner, Stack, Text, mergeStyles } from '@fluentui/react';
-import {
-  CustomAvatarOptions,
-  ErrorBar,
-  OnRenderAvatarCallback,
-  StreamMedia,
-  VideoGallery
-} from '@internal/react-components';
-import React, { useMemo } from 'react';
+import { IStyle, Persona, Spinner, SpinnerSize, Stack, Text, merge, mergeStyles } from '@fluentui/react';
+import { ErrorBar, OnRenderAvatarCallback, VideoGallery } from '@internal/react-components';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useLocale } from '../../localization';
 import { CallCompositeOptions } from '../CallComposite';
 import { useAdapter } from '../adapter/CallAdapterProvider';
@@ -39,10 +33,6 @@ export const TransferPage = (props: LobbyPageProps): JSX.Element => {
     : props.options?.callControls;
 
   const transferor = videoGalleryProps.remoteParticipants[0];
-  const renderElement = transferor?.videoStream?.renderElement;
-  const isAvailable = transferor?.videoStream?.isAvailable;
-  const isReceiving = transferor?.videoStream?.isReceiving;
-  const participantState = transferor?.state;
 
   let state: 'transferring' | 'connecting' = 'transferring';
   if (transferTargetCall !== undefined) {
@@ -56,19 +46,6 @@ export const TransferPage = (props: LobbyPageProps): JSX.Element => {
       state = 'connecting';
     }
   }
-
-  const showLoadingIndicator = isAvailable && isReceiving === false && participantState !== 'Disconnected';
-
-  const renderVideoStreamElement = useMemo(() => {
-    // Checking if renderElement is well defined or not as calling SDK has a number of video streams limitation which
-    // implies that, after their threshold, all streams have no child (blank video)
-    if (!renderElement || !renderElement.childElementCount) {
-      // Returning `undefined` results in the placeholder with avatar being shown
-      return undefined;
-    }
-
-    return <StreamMedia videoStreamElement={renderElement} loadingState={showLoadingIndicator ? 'loading' : 'none'} />;
-  }, [renderElement, showLoadingIndicator]);
 
   const transferParticipant = state === 'transferring' ? transferor : transferTargetCall?.remoteParticipants[0];
 
@@ -88,7 +65,6 @@ export const TransferPage = (props: LobbyPageProps): JSX.Element => {
         <TransferTile
           displayName={transferParticipant?.displayName}
           initialsName={transferParticipant?.displayName}
-          renderElement={renderVideoStreamElement}
           statusString={state === 'connecting' ? 'Connecting...' : 'Transferring...'}
         />
       )}
@@ -102,8 +78,6 @@ export interface TransferTileProps {
   children?: React.ReactNode;
   /** user id for the VideoTile placeholder. */
   userId?: string;
-  /** Component with the video stream. */
-  renderElement?: JSX.Element | null;
   /** Custom render Component function for no video is available. Render a Persona Icon if undefined. */
   onRenderPlaceholder?: OnRenderAvatarCallback;
   /**
@@ -154,88 +128,70 @@ export interface TransferTileProps {
   statusString?: string;
 }
 
-const DefaultPlaceholder = (props: CustomAvatarOptions): JSX.Element => {
-  const { text, noVideoAvailableAriaLabel, coinSize, hidePersonaDetails } = props;
-
-  return (
-    <Stack className={mergeStyles({ height: '100%', width: '100%' })}>
-      <Stack styles={defaultPersonaStyles}>
-        <Persona
-          coinSize={coinSize}
-          hidePersonaDetails={hidePersonaDetails}
-          text={text ?? ''}
-          initialsTextColor="white"
-          aria-label={noVideoAvailableAriaLabel ?? ''}
-          showOverflowTooltip={false}
-        />
-      </Stack>
-    </Stack>
-  );
-};
-
-const defaultPersonaStyles = { root: { margin: 'auto', maxHeight: '100%' } };
+const defaultPersonaStyles = { root: { margin: 'auto' } };
 
 const TransferTile = (props: TransferTileProps): JSX.Element => {
-  const {
-    displayName,
-    initialsName,
-    onRenderPlaceholder,
-    renderElement,
-    userId,
-    noVideoAvailableAriaLabel,
-    statusString
-  } = props;
+  const { displayName, initialsName, userId, onRenderPlaceholder, noVideoAvailableAriaLabel, statusString } = props;
 
-  const isVideoRendered = !!renderElement;
+  const [personaSize, setPersonaSize] = useState<number>();
+  const tileRef = useRef<HTMLDivElement>(null);
+
+  const observer = useRef(
+    new ResizeObserver((entries): void => {
+      const { width, height } = entries[0].contentRect;
+      const personaSize = Math.min(width, height) / 2;
+      setPersonaSize(Math.max(Math.min(personaSize, 100), 32));
+    })
+  );
+
+  useLayoutEffect(() => {
+    if (tileRef.current) {
+      observer.current.observe(tileRef.current);
+    }
+    const currentObserver = observer.current;
+    return () => currentObserver.disconnect();
+  }, [observer, tileRef]);
 
   const placeholderOptions = {
     userId,
     text: initialsName ?? displayName,
     noVideoAvailableAriaLabel,
-    coinSize: 64,
+    coinSize: personaSize,
     styles: defaultPersonaStyles,
     hidePersonaDetails: true
   };
 
   return (
-    <Stack>
-      {isVideoRendered ? (
-        <Stack className={mergeStyles(videoContainerStyles)}>{renderElement}</Stack>
-      ) : (
+    <div ref={tileRef} className={mergeStyles({ width: '100%', height: '100%' })} data-is-focusable={true}>
+      <Stack className={mergeStyles(videoContainerStyles)}>
         <Stack
-          className={mergeStyles(videoContainerStyles, {
-            opacity: 0.4
+          className={mergeStyles({
+            width: '100%',
+            position: 'absolute',
+            top: '50%',
+            transform: 'translate(0, -50%)',
+            display: 'flex',
+            justifyContent: 'center'
           })}
+          tokens={{ childrenGap: '1rem' }}
         >
-          <Stack
-            styles={{
-              root: {
-                height: '50%',
-                width: '100%',
-                position: 'absolute',
-                top: '40%',
-                transform: 'translate(0, -50%)',
-                display: 'flex',
-                justifyContent: 'center'
-              }
-            }}
-          >
-            {onRenderPlaceholder ? (
-              onRenderPlaceholder(userId ?? '', placeholderOptions, DefaultPlaceholder)
-            ) : (
-              <DefaultPlaceholder {...placeholderOptions} />
-            )}
-            <Text styles={{ root: { textAlign: 'center', fontSize: '32', fontWeight: 200 } }}>
+          <Stack horizontalAlign="center" tokens={{ childrenGap: '0.5rem' }}>
+            {onRenderPlaceholder
+              ? onRenderPlaceholder(userId ?? '', placeholderOptions, () =>
+                  personaSize ? <Persona {...placeholderOptions} className={mergeStyles({ opacity: 0.4 })} /> : <></>
+                )
+              : personaSize && <Persona {...placeholderOptions} className={mergeStyles({ opacity: 0.4 })} />}
+            <Text className={mergeStyles({ textAlign: 'center', fontSize: '1.5rem', fontWeight: 400 })}>
               {displayName ?? 'Unknown'}
             </Text>
-            <Stack horizontal horizontalAlign="center" tokens={{ childrenGap: '0.5rem' }}>
-              <Spinner />
-              <Text styles={{ root: { fontSize: '20' } }}>{statusString}</Text>
-            </Stack>
+          </Stack>
+          <Stack horizontal horizontalAlign="center" verticalAlign="center" tokens={{ childrenGap: '0.5rem' }}>
+            <Spinner size={SpinnerSize.large} styles={{ circle: { borderWidth: '0.125rem' } }} />
+            <Text className={mergeStyles({ textAlign: 'center', fontSize: '1rem' })}>{statusString}</Text>
           </Stack>
         </Stack>
-      )}
-    </Stack>
+      </Stack>
+    </div>
   );
 };
 
