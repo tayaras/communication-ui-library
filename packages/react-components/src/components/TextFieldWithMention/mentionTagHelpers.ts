@@ -715,6 +715,11 @@ export const getDisplayNameForMentionSuggestion = (suggestion: Mention, localeSt
   return suggestion.displayText !== '' ? suggestion.displayText : displayNamePlaceholder ?? '';
 };
 
+/**
+ * Represents a tag in the text content.
+ *
+ * @private
+ */
 export type TagData = {
   tagType: string; // The type of tag (e.g. msft-mention)
   openTagIdx: number; // Start of the tag relative to the parent content
@@ -726,8 +731,18 @@ export type TagData = {
   plainTextEndIndex?: number; // Absolute index of the close tag start should be in plain text
 };
 
+/**
+ * The type of an HTML tag.
+ *
+ * @private
+ */
 export type HtmlTagType = 'open' | 'close' | 'self-closing';
 
+/**
+ * Represents an HTML tag.
+ *
+ * @private
+ */
 export type HtmlTag = {
   content: string;
   startIdx: number;
@@ -827,6 +842,14 @@ export const textToTagParser = (text: string, trigger: string): { tags: TagData[
   return { tags, plainText: plainTextRepresentation };
 };
 
+/**
+ * Parses an open HTML tag and returns the tag data.
+ * @param {string} tag - The HTML tag to parse.
+ * @param {number} startIdx - The starting index of the tag in the text.
+ * @returns {TagData} - The parsed tag data.
+ *
+ * @private
+ */
 export const parseOpenTag = (tag: string, startIdx: number): TagData => {
   const tagType = tag
     .substring(1, tag.length - 1)
@@ -840,6 +863,14 @@ export const parseOpenTag = (tag: string, startIdx: number): TagData => {
   };
 };
 
+/**
+ * Finds the next HTML tag in the given text starting from the given index.
+ * @param {string} text - The text to search for HTML tags.
+ * @param {number} startIndex - The index to start searching from.
+ * @returns {HtmlTag | undefined} - The next HTML tag found, or undefined if none is found.
+ *
+ * @private
+ */
 export const findNextHtmlTag = (text: string, startIndex: number): HtmlTag | undefined => {
   const tagStartIndex = text.indexOf('<', startIndex);
   if (tagStartIndex === -1) {
@@ -865,6 +896,14 @@ export const findNextHtmlTag = (text: string, startIndex: number): HtmlTag | und
   };
 };
 
+/**
+ * Adds a tag to the tag list and updates the parse stack.
+ * @param {TagData} tag - The tag to add.
+ * @param {TagData[]} parseStack - The parse stack.
+ * @param {TagData[]} tags - The tag list.
+ *
+ * @private
+ */
 export const addTag = (tag: TagData, parseStack: TagData[], tags: TagData[]): void => {
   // Add as sub-tag to the parent stack tag, if there is one
   const parentTag = parseStack[parseStack.length - 1];
