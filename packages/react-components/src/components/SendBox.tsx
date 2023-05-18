@@ -17,6 +17,7 @@ import { fileUploadCardsStyles } from './styles/SendBox.styles';
 import { SendBoxErrorBarError } from './SendBoxErrorBar';
 /* @conditional-compile-remove(mention) */
 import { MentionLookupOptions } from './MentionPopover';
+import { TextFieldWithMention } from './TextFieldWithMention/TextFieldWithMention';
 
 const EMPTY_MESSAGE_REGEX = /^\s*$/;
 const MAXIMUM_LENGTH_OF_MESSAGE = 8000;
@@ -362,7 +363,7 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
           })
         )}
       >
-        <InputBoxComponent
+        <TextFieldWithMention
           autoFocus={autoFocus}
           data-ui-id={ids.sendboxTextField}
           inlineChildren={true}
@@ -401,7 +402,7 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
             ariaLabel={localeStrings.sendButtonAriaLabel}
             tooltipContent={localeStrings.sendButtonAriaLabel}
           />
-        </InputBoxComponent>
+        </TextFieldWithMention>
         {
           /* @conditional-compile-remove(file-sharing) */
           onRenderFileUploads()
