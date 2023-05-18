@@ -16,9 +16,11 @@ export type ValidatedIndexRangeProps = {
 };
 
 /**
- * Get validated value for index between min and max values. If currentValue is not defined, -1 will be used instead
+ * Get validated value for index between min and max values. If currentValue is not defined, -1 will be used instead.
  *
  * @private
+ * @param props - Props for finding a valid index in range.
+ * @returns Valid index in the range.
  */
 export const getValidatedIndexInRange = (props: ValidatedIndexRangeProps): number => {
   const { min, max, currentValue } = props;
@@ -29,9 +31,12 @@ export const getValidatedIndexInRange = (props: ValidatedIndexRangeProps): numbe
 };
 
 /**
- * Find mention tag if selection is inside of it
+ * Find mention tag for selection if exists.
  *
  * @private
+ * @param tags - Existing list of tags.
+ * @param selection - Selection index.
+ * @returns Mention tag if exists, otherwise undefined.
  */
 export const findMentionTagForSelection = (tags: TagData[], selection: number): TagData | undefined => {
   let mentionTag: TagData | undefined = undefined;
@@ -54,9 +59,8 @@ export const findMentionTagForSelection = (tags: TagData[], selection: number): 
           mentionTag = selectedTag;
           break;
         }
-      } else if (tag.tagType === 'msft-mention') {
+      } else if (tag.tagType === MSFT_MENTION_TAG) {
         mentionTag = tag;
-        //TODO: move msft-mention to a constant
         break;
       }
     }
@@ -72,39 +76,39 @@ export const findMentionTagForSelection = (tags: TagData[], selection: number): 
 export type NewSelectionIndexForMentionProps = {
   tag: TagData;
   textValue: string;
-  selection: number;
-  previousSelection: number;
+  currentSelectionIndex: number;
+  previousSelectionIndex: number;
 };
 
 /**
- * Find a new the selection index
+ * Find a new the selection index.
  *
  * @private
- * @param props Props for finding new selection index for mention
- * @returns New selection index if it is inside of a mention tag, otherwise the current selection
+ * @param props - Props for finding new selection index for mention.
+ * @returns New selection index if it is inside of a mention tag, otherwise the current selection.
  */
 export const findNewSelectionIndexForMention = (props: NewSelectionIndexForMentionProps): number => {
-  const { tag, textValue, selection, previousSelection } = props;
+  const { tag, textValue, currentSelectionIndex, previousSelectionIndex } = props;
   // check if this is a mention tag and selection should be updated
   if (
-    tag.tagType !== 'msft-mention' ||
+    tag.tagType !== MSFT_MENTION_TAG ||
     tag.plainTextBeginIndex === undefined ||
-    selection === previousSelection ||
+    currentSelectionIndex === previousSelectionIndex ||
     tag.plainTextEndIndex === undefined
   ) {
-    return selection;
+    return currentSelectionIndex;
   }
   let spaceIndex = 0;
-  if (selection <= previousSelection) {
-    // the cursor is moved to the left
-    spaceIndex = textValue.lastIndexOf(' ', selection ?? 0);
+  if (currentSelectionIndex <= previousSelectionIndex) {
+    // the cursor is moved to the left, find the last index before the cursor
+    spaceIndex = textValue.lastIndexOf(' ', currentSelectionIndex ?? 0);
     if (spaceIndex === -1) {
       // no space before the selection, use the beginning of the tag
       spaceIndex = tag.plainTextBeginIndex;
     }
   } else {
-    // the cursor is moved to the right
-    spaceIndex = textValue.indexOf(' ', selection ?? 0);
+    // the cursor is moved to the right, find the fist index after the cursor
+    spaceIndex = textValue.indexOf(' ', currentSelectionIndex ?? 0);
     if (spaceIndex === -1) {
       // no space after the selection, use the end of the tag
       spaceIndex = tag.plainTextEndIndex ?? tag.plainTextBeginIndex;
@@ -151,6 +155,8 @@ export type MentionTagUpdateResult = {
  * Handle mention tag edit and by word deleting
  *
  * @private
+ * @param props - Props for mention update HTML function.
+ * @returns Updated texts and indexes.
  */
 export const handleMentionTagUpdate = (props: MentionTagUpdateProps): MentionTagUpdateResult => {
   const {
@@ -167,7 +173,8 @@ export const handleMentionTagUpdate = (props: MentionTagUpdateProps): MentionTag
   } = props;
   let processedChange = props.processedChange;
   let lastProcessedHTMLIndex = props.lastProcessedHTMLIndex;
-  if (tag.tagType !== 'msft-mention' || tag.plainTextBeginIndex === undefined) {
+  if (tag.tagType !== MSFT_MENTION_TAG || tag.plainTextBeginIndex === undefined) {
+    // not a mention tag
     return {
       result: '',
       updatedChange: processedChange,
@@ -196,9 +203,11 @@ export const handleMentionTagUpdate = (props: MentionTagUpdateProps): MentionTag
   isSpaceLengthHandled = true;
 
   if (rangeStart === -1 || rangeStart === undefined || rangeStart < tag.plainTextBeginIndex) {
+    // rangeStart should be at least equal to tag.plainTextBeginIndex
     rangeStart = tag.plainTextBeginIndex;
   }
   if (rangeEnd > plainTextEndIndex) {
+    // rangeEnd should be at most equal to plainTextEndIndex
     rangeEnd = plainTextEndIndex;
   }
   if (rangeStart === tag.plainTextBeginIndex && rangeEnd === plainTextEndIndex) {
@@ -219,9 +228,10 @@ export const handleMentionTagUpdate = (props: MentionTagUpdateProps): MentionTag
     result += htmlText.substring(lastProcessedHTMLIndex, tag.openTagIdx + tag.openTagBody.length + startChangeDiff);
 
     if (startIndex < tag.plainTextBeginIndex) {
-      // if the change is before the tag, the selection should start from startIndex
+      // if the change is before the tag, the selection should start from startIndex (rangeStart will be equal to tag.plainTextBeginIndex)
       plainTextSelectionEndIndex = startIndex + change.length;
     } else {
+      // if the change is inside the tag, the selection should start with rangeStart
       plainTextSelectionEndIndex = rangeStart + processedChange.length;
     }
     lastProcessedHTMLIndex = tag.openTagIdx + tag.openTagBody.length + endChangeDiff;
@@ -231,7 +241,7 @@ export const handleMentionTagUpdate = (props: MentionTagUpdateProps): MentionTag
 };
 
 /**
- * Get close tag information if exists otherwise return information as for self closing tag
+ * Closing tag information
  *
  * @private
  */
@@ -242,9 +252,11 @@ export type ClosingTagInfoResult = {
 };
 
 /**
- * Get close tag information if exists otherwise return information as for self closing tag
+ * Get closing tag information if exists otherwise return information as for self closing tag
  *
  * @private
+ * @param tag - Tag data.
+ * @returns Closing tag information for the provided tag.
  */
 export const getTagClosingTagInfo = (tag: TagData): ClosingTagInfoResult => {
   let plainTextEndIndex = 0;
@@ -285,6 +297,8 @@ export type UpdateHTMLProps = {
  * Go through the text and update it with the changed text
  *
  * @private
+ * @param props - Props for update HTML function.
+ * @returns Updated HTML and selection index if the selection index should be set.
  */
 export const updateHTML = (props: UpdateHTMLProps): { updatedHTML: string; updatedSelectionIndex: number | null } => {
   const { htmlText, oldPlainText, newPlainText, tags, startIndex, oldPlainTextEndIndex, change, mentionTrigger } =
@@ -314,10 +328,10 @@ export const updateHTML = (props: UpdateHTMLProps): { updatedHTML: string; updat
     }
     // all plain text indexes includes trigger length for the mention that shouldn't be included in
     // htmlText.substring because html strings don't include the trigger
-    // mentionTagLength will be set only for 'msft-mention', otherwise should be 0
+    // mentionTagLength will be set only for mention tag, otherwise should be 0
     let mentionTagLength = 0;
     let isMentionTag = false;
-    if (tag.tagType === 'msft-mention') {
+    if (tag.tagType === MSFT_MENTION_TAG) {
       mentionTagLength = mentionTrigger.length;
       isMentionTag = true;
     }
@@ -487,6 +501,7 @@ export const updateHTML = (props: UpdateHTMLProps): { updatedHTML: string; updat
       } else if (startIndex < tag.plainTextBeginIndex && oldPlainTextEndIndex < closingTagInfo.plainTextEndIndex) {
         // the change  starts before the tag and ends in a tag
         if (isMentionTag) {
+          // mention tag
           const updateMentionTagResult = handleMentionTagUpdate({
             htmlText,
             oldPlainText,
@@ -600,8 +615,9 @@ export type DiffIndexesResult = {
 /**
  * Given the oldText and newText, find the start index, old end index and new end index for the changes
  *
- * @returns change start index, old end index and new end index. The old and new end indexes are exclusive.
  * @private
+ * @param props - Props for finding stings diff indexes function.
+ * @returns Indexes for change start and ends in new and old texts. The old and new end indexes are exclusive.
  */
 export const findStringsDiffIndexes = (props: DiffIndexesProps): DiffIndexesResult => {
   const { oldText, newText, previousSelectionStart, previousSelectionEnd, currentSelectionStart, currentSelectionEnd } =
@@ -688,27 +704,28 @@ export const findStringsDiffIndexes = (props: DiffIndexesProps): DiffIndexesResu
 };
 
 /**
- * Returns an HTML string for a mention suggestion.
+ * Get the html string for the mention suggestion.
  *
- * @param {Mention} suggestion - The mention suggestion object.
- * @param {ComponentStrings} localeStrings - The locale strings object.
- * @returns {string} The HTML string for the mention suggestion.
- *
- * private
+ * @private
+ * @param suggestion - The mention suggestion.
+ * @param localeStrings - The locale strings.
+ * @returns The html string for the mention suggestion.
  */
 export const htmlStringForMentionSuggestion = (suggestion: Mention, localeStrings: ComponentStrings): string => {
   const idHTML = ' id ="' + suggestion.id + '"';
   const displayTextHTML = ' displayText ="' + suggestion.displayText + '"';
   const displayText = getDisplayNameForMentionSuggestion(suggestion, localeStrings);
-  return '<msft-mention' + idHTML + displayTextHTML + '>' + displayText + '</msft-mention>';
+  return '<' + MSFT_MENTION_TAG + idHTML + displayTextHTML + '>' + displayText + '</' + MSFT_MENTION_TAG + '>';
 };
 
 /**
- * Returns the display name for a mention suggestion.
+ * Get display name for the mention suggestion.
  *
- * @param {Mention} suggestion - The mention suggestion object.
- * @param {ComponentStrings} localeStrings - The locale strings object.
- * @returns {string} The display name for the mention suggestion.
+ * @private
+ *
+ * @param suggestion - The mention suggestion.
+ * @param localeStrings - The locale strings.
+ * @returns The display name for the mention suggestion or display name placeholder if display name is empty.
  */
 export const getDisplayNameForMentionSuggestion = (suggestion: Mention, localeStrings: ComponentStrings): string => {
   const displayNamePlaceholder = localeStrings.participantItem.displayNamePlaceholder;
@@ -736,8 +753,9 @@ export type HtmlTag = {
 
 /**
  * Parse the text and return the tags and the plain text in one go
+ * @private
  * @param text - The text to parse for HTML tags
- * @param trigger The trigger to show for the msft-mention tag in plain text
+ * @param trigger The trigger to show for the mention tag in plain text
  *
  * @returns An array of tags and the plain text representation
  */
@@ -789,7 +807,7 @@ export const textToTagParser = (text: string, trigger: string): { tags: TagData[
         );
 
         // Insert the plain text pieces for the sub tags
-        if (currentOpenTag.tagType === 'msft-mention') {
+        if (currentOpenTag.tagType === MSFT_MENTION_TAG) {
           plainTextRepresentation =
             plainTextRepresentation.slice(0, currentOpenTag.plainTextBeginIndex) +
             trigger +
