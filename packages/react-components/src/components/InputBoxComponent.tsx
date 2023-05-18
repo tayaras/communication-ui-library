@@ -11,7 +11,8 @@ import {
   concatStyleSets,
   IconButton,
   TooltipHost,
-  ICalloutContentStyles
+  ICalloutContentStyles,
+  ITextFieldProps
 } from '@fluentui/react';
 import { BaseCustomStyles } from '../types';
 import {
@@ -28,6 +29,10 @@ import {
 
 import { isDarkThemed } from '../theming/themeUtils';
 import { useTheme } from '../theming';
+/* @conditional-compile-remove(mention) */
+import { MentionLookupOptions } from './MentionPopover';
+/* @conditional-compile-remove(mention) */
+import { TextFieldWithMention, TextFieldWithMentionProps } from './TextFieldWithMention/TextFieldWithMention';
 
 /**
  * @private
@@ -48,7 +53,7 @@ export interface InputBoxStylesProps extends BaseCustomStyles {
  *
  * @private
  */
-export type InputBoxComponentProps = {
+type InputBoxComponentProps = {
   children: ReactNode;
   /**
    * Inline child elements passed in. Setting to false will mean they are on a new line.
@@ -57,7 +62,7 @@ export type InputBoxComponentProps = {
   'data-ui-id'?: string;
   id?: string;
   textValue: string;
-  onChange: (event: FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string | undefined) => void;
+  onChange: (event?: FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => void;
   textFieldRef?: React.RefObject<ITextField>;
   inputClassName?: string;
   placeholderText?: string;
@@ -69,6 +74,8 @@ export type InputBoxComponentProps = {
   disabled?: boolean;
   styles?: InputBoxStylesProps;
   autoFocus?: 'sendBoxTextField';
+  /* @conditional-compile-remove(mention) */
+  mentionLookupOptions?: MentionLookupOptions;
 };
 
 /**
@@ -136,30 +143,53 @@ export const InputBoxComponent = (props: InputBoxComponentProps): JSX.Element =>
     );
   };
 
+  const renderTextField = (): JSX.Element => {
+    const textFieldProps: ITextFieldProps = {
+      autoFocus: props.autoFocus === 'sendBoxTextField',
+      multiline: true,
+      autoAdjustHeight: true,
+      multiple: false,
+      resizable: false,
+      componentRef: textFieldRef,
+      id,
+      inputClassName: mergedTextFiledStyle,
+      placeholder: placeholderText,
+      autoComplete: 'off',
+      styles: mergedTextFieldStyle,
+      disabled,
+      errorMessage,
+      onRenderSuffix: onRenderChildren
+    };
+    /* @conditional-compile-remove(mention) */
+    const textFieldWithMentionProps: TextFieldWithMentionProps = {
+      textFieldProps: textFieldProps,
+      dataUiId: dataUiId,
+      textValue: textValue,
+      onChange: onChange,
+      onKeyDown: onTextFieldKeyDown,
+      onEnterKeyDown: onEnterKeyDown,
+      textFieldRef: textFieldRef,
+      supportNewline: supportNewline,
+      mentionLookupOptions: props.mentionLookupOptions
+    };
+    /* @conditional-compile-remove(mention) */
+    if (props.mentionLookupOptions) {
+      return <TextFieldWithMention {...textFieldWithMentionProps} />;
+    }
+    return (
+      <TextField
+        {...textFieldProps}
+        data-ui-id={dataUiId}
+        value={textValue}
+        onChange={onChange}
+        onKeyDown={onTextFieldKeyDown}
+      />
+    );
+  };
+
   return (
     <Stack className={mergedRootStyle}>
-      <div className={mergedTextContainerStyle}>
-        <TextField
-          autoFocus={props.autoFocus === 'sendBoxTextField'}
-          data-ui-id={dataUiId}
-          multiline
-          autoAdjustHeight
-          multiple={false}
-          resizable={false}
-          componentRef={textFieldRef}
-          id={id}
-          inputClassName={mergedTextFiledStyle}
-          placeholder={placeholderText}
-          value={textValue}
-          onChange={onChange}
-          autoComplete="off"
-          onKeyDown={onTextFieldKeyDown}
-          styles={mergedTextFieldStyle}
-          disabled={disabled}
-          errorMessage={errorMessage}
-          onRenderSuffix={onRenderChildren}
-        />
-      </div>
+      <div className={mergedTextContainerStyle}>{renderTextField()}</div>
     </Stack>
   );
 };

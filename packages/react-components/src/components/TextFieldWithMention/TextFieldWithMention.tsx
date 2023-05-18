@@ -5,15 +5,7 @@ import React, { useState, FormEvent, useCallback, useRef } from 'react';
 import { useEffect } from 'react';
 import { useLocale } from '../../localization';
 
-import { Stack, TextField, mergeStyles, ITextField, concatStyleSets } from '@fluentui/react';
-import {
-  inputBoxStyle,
-  inputBoxWrapperStyle,
-  textFieldStyle,
-  textContainerStyle,
-  newLineButtonsContainerStyle,
-  inputBoxNewLineSpaceAffordance
-} from './../styles/InputBoxComponent.style';
+import { TextField, ITextField, ITextFieldProps } from '@fluentui/react';
 import { Caret } from 'textarea-caret-ts';
 import { MentionLookupOptions, _MentionPopover, Mention } from './../MentionPopover';
 import { useDebouncedCallback } from 'use-debounce';
@@ -28,7 +20,7 @@ import {
   textToTagParser,
   updateHTML
 } from './../TextFieldWithMention/mentionTagHelpers';
-import { InputBoxComponentProps } from '../InputBoxComponent';
+
 const DEFAULT_MENTION_TRIGGER = '@';
 const MSFT_MENTION_TAG = 'msft-mention';
 
@@ -37,12 +29,15 @@ const MSFT_MENTION_TAG = 'msft-mention';
  *
  * @private
  */
-export interface TextFieldWithMentionProps extends InputBoxComponentProps {
+export interface TextFieldWithMentionProps {
+  textFieldProps: ITextFieldProps;
+  dataUiId: string | undefined;
   textValue: string; // This could be plain text or HTML.
   onChange: (event?: FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => void;
-  textFieldRef?: React.RefObject<ITextField>;
   onKeyDown?: (ev: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onEnterKeyDown?: () => void;
+  textFieldRef?: React.RefObject<ITextField>;
+  supportNewline?: boolean;
   mentionLookupOptions?: MentionLookupOptions;
 }
 
@@ -51,21 +46,15 @@ export interface TextFieldWithMentionProps extends InputBoxComponentProps {
  */
 export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Element => {
   const {
-    styles,
-    id,
-    'data-ui-id': dataUiId,
+    textFieldProps,
+    dataUiId,
     textValue,
     onChange,
     textFieldRef,
-    placeholderText,
     onKeyDown,
     onEnterKeyDown,
     supportNewline,
-    inputClassName,
-    errorMessage,
-    disabled,
-    mentionLookupOptions,
-    children
+    mentionLookupOptions
   } = props;
 
   // Index of the current trigger character in the text field
@@ -108,13 +97,6 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     updateMentionSuggestions([]);
   }, [textValue, mentionLookupOptions?.trigger, updateMentionSuggestions]);
 
-  const mergedRootStyle = mergeStyles(inputBoxWrapperStyle, styles?.root);
-  const mergedTextFiledStyle = mergeStyles(
-    inputBoxStyle,
-    inputClassName,
-    props.inlineChildren ? {} : inputBoxNewLineSpaceAffordance
-  );
-
   useEffect(() => {
     // effect for caret index update
     if (caretIndex === undefined || textFieldRef === undefined || textFieldRef?.current === undefined) {
@@ -130,20 +112,6 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     setSelectionStartValue(updatedCaretIndex);
     setSelectionEndValue(updatedCaretIndex);
   }, [caretIndex, inputTextValue.length, textFieldRef, setSelectionStartValue, setSelectionEndValue]);
-
-  const mergedTextContainerStyle = mergeStyles(textContainerStyle, styles?.textFieldContainer);
-  const mergedTextFieldStyle = concatStyleSets(textFieldStyle, {
-    fieldGroup: styles?.textField,
-    errorMessage: styles?.systemMessage,
-    suffix: {
-      backgroundColor: 'transparent',
-      // Remove empty space in the suffix area when adding newline-style buttons
-      display: props.inlineChildren ? 'flex' : 'contents',
-      padding: '0 0.25rem'
-    }
-  });
-
-  const mergedChildrenStyle = mergeStyles(props.inlineChildren ? {} : newLineButtonsContainerStyle);
 
   const onSuggestionSelected = useCallback(
     (suggestion: Mention) => {
@@ -254,18 +222,12 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     [onEnterKeyDown, onKeyDown, supportNewline, mentionSuggestions, activeSuggestionIndex, onSuggestionSelected]
   );
 
-  const onRenderChildren = (): JSX.Element => {
-    return (
-      <Stack horizontal className={mergedChildrenStyle}>
-        {children}
-      </Stack>
-    );
-  };
   const debouncedQueryUpdate = useDebouncedCallback(async (query?: string) => {
     if (query === undefined) {
       updateMentionSuggestions([]);
       return;
     }
+
     const suggestions = (await mentionLookupOptions?.onQueryUpdated(query)) ?? [];
     if (suggestions.length === 0) {
       setActiveSuggestionIndex(undefined);
@@ -464,7 +426,6 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
         const triggerPriorIndex = newValue.lastIndexOf(triggerText, currentSelectionEndValue - 1);
         // Update the caret position, if not doing a lookup
         setCaretPosition(Caret.getRelativePosition(event.currentTarget));
-
         if (triggerPriorIndex !== undefined) {
           // trigger is found
           const isSpaceBeforeTrigger = newValue.substring(triggerPriorIndex - 1, triggerPriorIndex) === ' ';
@@ -537,104 +498,84 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
   );
 
   return (
-    <Stack className={mergedRootStyle}>
-      <div className={mergedTextContainerStyle}>
-        {mentionSuggestions.length > 0 && (
-          <_MentionPopover
-            suggestions={mentionSuggestions}
-            activeSuggestionIndex={activeSuggestionIndex}
-            target={inputBoxRef}
-            targetPositionOffset={caretPosition}
-            onRenderSuggestionItem={mentionLookupOptions?.onRenderSuggestionItem}
-            onSuggestionSelected={onSuggestionSelected}
-            onDismiss={() => {
-              updateMentionSuggestions([]);
-            }}
-          />
-        )}
-        <TextField
-          autoFocus={props.autoFocus === 'sendBoxTextField'}
-          data-ui-id={dataUiId}
-          multiline
-          autoAdjustHeight
-          multiple={false}
-          resizable={false}
-          componentRef={textFieldRef}
-          id={id}
-          inputClassName={mergedTextFiledStyle}
-          placeholder={placeholderText}
-          value={inputTextValue}
-          onChange={(e, newValue) => {
-            // Remove when switching to react 17+, currently needed because of https://legacy.reactjs.org/docs/legacy-event-pooling.html
-
-            // Prevents React from resetting event's properties
-            e.persist();
-
-            setInputTextValue(newValue ?? '');
-
-            handleOnChange(
-              e,
-              tagsValue,
-              textValue,
-              inputTextValue,
-              currentTriggerStartIndex,
-              selectionStartValue === null ? undefined : selectionStartValue,
-              selectionEndValue === null ? undefined : selectionEndValue,
-              e.currentTarget.selectionStart === null ? undefined : e.currentTarget.selectionStart,
-              e.currentTarget.selectionEnd === null ? undefined : e.currentTarget.selectionEnd,
-              newValue
-            );
-
-            return;
-            onChange(e, newValue);
+    <div>
+      {mentionSuggestions.length > 0 && (
+        <_MentionPopover
+          suggestions={mentionSuggestions}
+          activeSuggestionIndex={activeSuggestionIndex}
+          target={inputBoxRef}
+          targetPositionOffset={caretPosition}
+          onRenderSuggestionItem={mentionLookupOptions?.onRenderSuggestionItem}
+          onSuggestionSelected={onSuggestionSelected}
+          onDismiss={() => {
+            updateMentionSuggestions([]);
           }}
-          onSelect={(e) => {
-            // update selection if needed
-            if (caretIndex !== undefined) {
-              setCaretIndex(undefined);
-              // sometimes setting selectionRage in effect for updating caretIndex doesn't work as expected and onSelect should handle this case
-              if (caretIndex !== e.currentTarget.selectionStart || caretIndex !== e.currentTarget.selectionEnd) {
-                e.currentTarget.setSelectionRange(caretIndex, caretIndex);
-              }
-              return;
-            }
-            handleOnSelect(
-              e,
-              inputTextValue,
-              tagsValue,
-              shouldHandleOnMouseDownDuringSelect,
-              selectionStartValue,
-              selectionEndValue
-            );
-          }}
-          onMouseDown={() => {
-            // as events order is onMouseDown -> onSelect -> onClick
-            // onClick and onMouseDown can't handle clicking on mention event because
-            // onMouseDown doesn't have correct selectionRange yet and
-            // onClick already has wrong range as it's called after onSelect that updates the selection range
-            // so we need to handle onMouseDown to prevent onSelect default behavior
-            setShouldHandleOnMouseDownDuringSelect(true);
-          }}
-          onTouchStart={() => {
-            // see onMouseDown for more details
-            setShouldHandleOnMouseDownDuringSelect(true);
-          }}
-          onBlur={() => {
-            // setup all flags to default values when text field loses focus
-            setShouldHandleOnMouseDownDuringSelect(false);
-            setCaretIndex(undefined);
-            setSelectionStartValue(null);
-            setSelectionEndValue(null);
-          }}
-          autoComplete="off"
-          onKeyDown={onTextFieldKeyDown}
-          styles={mergedTextFieldStyle}
-          disabled={disabled}
-          errorMessage={errorMessage}
-          onRenderSuffix={onRenderChildren}
-          elementRef={inputBoxRef}
         />
-      </div>
-    </Stack>
+      )}
+      <TextField
+        {...textFieldProps}
+        data-ui-id={dataUiId}
+        componentRef={textFieldRef}
+        value={inputTextValue}
+        onChange={(e, newValue) => {
+          // Remove when switching to react 17+, currently needed because of https://legacy.reactjs.org/docs/legacy-event-pooling.html
+          // Prevents React from resetting event's properties
+          e.persist();
+          setInputTextValue(newValue ?? '');
+          handleOnChange(
+            e,
+            tagsValue,
+            textValue,
+            inputTextValue,
+            currentTriggerStartIndex,
+            selectionStartValue === null ? undefined : selectionStartValue,
+            selectionEndValue === null ? undefined : selectionEndValue,
+            e.currentTarget.selectionStart === null ? undefined : e.currentTarget.selectionStart,
+            e.currentTarget.selectionEnd === null ? undefined : e.currentTarget.selectionEnd,
+            newValue
+          );
+        }}
+        onSelect={(e) => {
+          // update selection if needed
+          if (caretIndex !== undefined) {
+            setCaretIndex(undefined);
+            // sometimes setting selectionRage in effect for updating caretIndex doesn't work as expected and onSelect should handle this case
+            if (caretIndex !== e.currentTarget.selectionStart || caretIndex !== e.currentTarget.selectionEnd) {
+              e.currentTarget.setSelectionRange(caretIndex, caretIndex);
+            }
+            return;
+          }
+          handleOnSelect(
+            e,
+            inputTextValue,
+            tagsValue,
+            shouldHandleOnMouseDownDuringSelect,
+            selectionStartValue,
+            selectionEndValue
+          );
+        }}
+        onMouseDown={() => {
+          // as events order is onMouseDown -> onSelect -> onClick
+          // onClick and onMouseDown can't handle clicking on mention event because
+          // onMouseDown doesn't have correct selectionRange yet and
+          // onClick already has wrong range as it's called after onSelect that updates the selection range
+          // so we need to handle onMouseDown to prevent onSelect default behavior
+          setShouldHandleOnMouseDownDuringSelect(true);
+        }}
+        onTouchStart={() => {
+          // see onMouseDown for more details
+          setShouldHandleOnMouseDownDuringSelect(true);
+        }}
+        onBlur={() => {
+          // setup all flags to default values when text field loses focus
+          setShouldHandleOnMouseDownDuringSelect(false);
+          setCaretIndex(undefined);
+          setSelectionStartValue(null);
+          setSelectionEndValue(null);
+        }}
+        onKeyDown={onTextFieldKeyDown}
+        elementRef={inputBoxRef}
+      />
+    </div>
   );
 };

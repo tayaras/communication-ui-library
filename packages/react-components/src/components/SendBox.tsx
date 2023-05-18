@@ -363,7 +363,7 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
           })
         )}
       >
-        <TextFieldWithMention
+        <InputBoxComponent
           autoFocus={autoFocus}
           data-ui-id={ids.sendboxTextField}
           inlineChildren={true}
@@ -402,7 +402,7 @@ export const SendBox = (props: SendBoxProps): JSX.Element => {
             ariaLabel={localeStrings.sendButtonAriaLabel}
             tooltipContent={localeStrings.sendButtonAriaLabel}
           />
-        </TextFieldWithMention>
+        </InputBoxComponent>
         {
           /* @conditional-compile-remove(file-sharing) */
           onRenderFileUploads()
