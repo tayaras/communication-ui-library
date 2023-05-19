@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import React, { useState, ReactNode, FormEvent, useCallback, useRef } from 'react';
+import React, { useState, FormEvent, useCallback, useRef } from 'react';
 import { useEffect } from 'react';
 import { useLocale } from '../../localization';
 
-import { Stack, TextField, mergeStyles, IStyle, ITextField, concatStyleSets } from '@fluentui/react';
-import { BaseCustomStyles } from '../../types';
+import { Stack, TextField, mergeStyles, ITextField, concatStyleSets } from '@fluentui/react';
 import {
   inputBoxStyle,
   inputBoxWrapperStyle,
@@ -30,7 +29,8 @@ import {
   updateHTML
 } from './../TextFieldWithMention/mentionTagHelpers';
 import { InputBoxComponentProps } from '../InputBoxComponent';
-const defaultMentionTrigger = '@';
+const DEFAULT_MENTION_TRIGGER = '@';
+const MSFT_MENTION_TAG = 'msft-mention';
 
 /**
  * Props for the TextFieldWithMention component.
@@ -67,11 +67,6 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     mentionLookupOptions,
     children
   } = props;
-  const inputBoxRef = useRef<HTMLDivElement>(null);
-
-  // Current suggestion list, provided by the callback
-  const [mentionSuggestions, setMentionSuggestions] = useState<Mention[]>([]);
-  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number | undefined>(undefined);
 
   // Index of the current trigger character in the text field
   const [currentTriggerStartIndex, setCurrentTriggerStartIndex] = useState<number>(-1);
@@ -81,8 +76,14 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
   const [selectionStartValue, setSelectionStartValue] = useState<number | null>(null);
   // Index of the previous selection end in the text field
   const [selectionEndValue, setSelectionEndValue] = useState<number | null>(null);
-  // Boolean value to check if on mouse down event should be handled during select as selection range for onMouseDown event is not updated yet and the selection range for mouse click/taps will be updated in onSelect event if needed.
+  // Boolean value to check if onMouseDown event should be handled during select as selection range for onMouseDown event is not updated yet and the selection range for mouse click/taps will be updated in onSelect event if needed.
   const [shouldHandleOnMouseDownDuringSelect, setShouldHandleOnMouseDownDuringSelect] = useState<boolean>(true);
+
+  const inputBoxRef = useRef<HTMLDivElement>(null);
+
+  // Current suggestion list, provided by the callback
+  const [mentionSuggestions, setMentionSuggestions] = useState<Mention[]>([]);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number | undefined>(undefined);
 
   // Caret position in the text field
   const [caretPosition, setCaretPosition] = useState<Caret.Position | undefined>(undefined);
@@ -100,7 +101,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
 
   // Parse the text and get the plain text version to display in the input box
   useEffect(() => {
-    const trigger = mentionLookupOptions?.trigger || defaultMentionTrigger;
+    const trigger = mentionLookupOptions?.trigger || DEFAULT_MENTION_TRIGGER;
     const parsedHTMLData = textToTagParser(textValue, trigger);
     setInputTextValue(parsedHTMLData.plainText);
     setTagsValue(parsedHTMLData.tags);
@@ -119,11 +120,11 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     if (caretIndex === undefined || textFieldRef === undefined || textFieldRef?.current === undefined) {
       return;
     }
-    let updatedCaretIndex = caretIndex;
-    updatedCaretIndex = getValidatedIndexInRange({
+    // get validated caret index between 0 and inputTextValue.length otherwise caret will be set to incorrect index
+    const updatedCaretIndex = getValidatedIndexInRange({
       min: 0,
       max: inputTextValue.length,
-      currentValue: updatedCaretIndex
+      currentValue: caretIndex
     });
     textFieldRef?.current?.setSelectionRange(updatedCaretIndex, updatedCaretIndex);
     setSelectionStartValue(updatedCaretIndex);
@@ -158,7 +159,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       // update plain text with the mention html text
       const newPlainText =
         inputTextValue.substring(0, currentTriggerStartIndex) + mention + inputTextValue.substring(selectionEnd);
-      const triggerText = mentionLookupOptions?.trigger ?? defaultMentionTrigger;
+      const triggerText = mentionLookupOptions?.trigger ?? DEFAULT_MENTION_TRIGGER;
       // update html text with updated plain text
       const updatedContent = updateHTML({
         htmlText: textValue,
@@ -172,12 +173,13 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       });
       const displayName = getDisplayNameForMentionSuggestion(suggestion, localeStrings);
       const newCaretIndex = currentTriggerStartIndex + displayName.length + triggerText.length;
-      // Move the caret in the text field to the end of the mention plain text
+      // move the caret in the text field to the end of the mention plain text
       setCaretIndex(newCaretIndex);
       setSelectionEndValue(newCaretIndex);
       setSelectionStartValue(newCaretIndex);
       setCurrentTriggerStartIndex(-1);
       updateMentionSuggestions([]);
+      // set focus back to text field
       textFieldRef?.current?.focus();
       setActiveSuggestionIndex(undefined);
       onChange && onChange(undefined, updatedContent.updatedHTML);
@@ -259,8 +261,11 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       </Stack>
     );
   };
-
-  const debouncedQueryUpdate = useDebouncedCallback(async (query: string) => {
+  const debouncedQueryUpdate = useDebouncedCallback(async (query?: string) => {
+    if (query === undefined) {
+      updateMentionSuggestions([]);
+      return;
+    }
     const suggestions = (await mentionLookupOptions?.onQueryUpdated(query)) ?? [];
     if (suggestions.length === 0) {
       setActiveSuggestionIndex(undefined);
@@ -276,6 +281,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
     };
   }, [debouncedQueryUpdate]);
 
+  // Update selections index in mention to navigate by words
   const updateSelectionIndexesWithMentionIfNeeded = useCallback(
     (
       event: FormEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -293,7 +299,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       ) {
         // just a caret movement/usual typing or deleting
         const mentionTag = findMentionTagForSelection(tagsValue, event.currentTarget.selectionStart);
-        // don't include boundary cases to show correct selection, otherwise it will show selection for 1 character earlier than mention
+        // don't include boundary cases to show correct selection, otherwise it will show selection at mention boundaries
         if (
           mentionTag !== undefined &&
           mentionTag.plainTextBeginIndex !== undefined &&
@@ -304,8 +310,8 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           const newSelectionIndex = findNewSelectionIndexForMention({
             tag: mentionTag,
             textValue: inputTextValue,
-            selection: event.currentTarget.selectionStart,
-            previousSelection: selectionStartValue ?? inputTextValue.length
+            currentSelectionIndex: event.currentTarget.selectionStart,
+            previousSelectionIndex: selectionStartValue ?? inputTextValue.length
           });
           updatedStartIndex = newSelectionIndex;
           updatedEndIndex = newSelectionIndex;
@@ -315,7 +321,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
         if (event.currentTarget.selectionStart !== null && event.currentTarget.selectionStart !== selectionStartValue) {
           // the selection start is changed
           const mentionTag = findMentionTagForSelection(tagsValue, event.currentTarget.selectionStart);
-          // don't include boundary cases to show correct selection, otherwise it will show selection for 1 character earlier than mention
+          // don't include boundary cases to show correct selection, otherwise it will show selection at mention boundaries
           if (
             mentionTag !== undefined &&
             mentionTag.plainTextBeginIndex !== undefined &&
@@ -325,15 +331,15 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
             updatedStartIndex = findNewSelectionIndexForMention({
               tag: mentionTag,
               textValue: inputTextValue,
-              selection: event.currentTarget.selectionStart,
-              previousSelection: selectionStartValue ?? inputTextValue.length
+              currentSelectionIndex: event.currentTarget.selectionStart,
+              previousSelectionIndex: selectionStartValue ?? inputTextValue.length
             });
           }
         }
         if (event.currentTarget.selectionEnd !== null && event.currentTarget.selectionEnd !== selectionEndValue) {
           // the selection end is changed
           const mentionTag = findMentionTagForSelection(tagsValue, event.currentTarget.selectionEnd);
-          // don't include boundary cases to show correct selection, otherwise it will show selection for 1 character earlier than mention
+          // don't include boundary cases to show correct selection, otherwise it will show selection at mention boundaries
           if (
             mentionTag !== undefined &&
             mentionTag.plainTextBeginIndex !== undefined &&
@@ -343,8 +349,8 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
             updatedEndIndex = findNewSelectionIndexForMention({
               tag: mentionTag,
               textValue: inputTextValue,
-              selection: event.currentTarget.selectionEnd,
-              previousSelection: selectionEndValue ?? inputTextValue.length
+              currentSelectionIndex: event.currentTarget.selectionEnd,
+              previousSelectionIndex: selectionEndValue ?? inputTextValue.length
             });
           }
         }
@@ -398,9 +404,11 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           setSelectionEndValue(event.currentTarget.selectionEnd);
         }
       } else {
+        // selection was changed by keyboard
         updateSelectionIndexesWithMentionIfNeeded(event, inputTextValue, selectionStartValue, selectionEndValue, tags);
       }
-      // don't set setShouldHandleOnMouseDownDuringSelect(false) here as setSelectionRange could trigger additional calls of onSelect event and they may not be handled correctly (because of setSelectionRange calls or rerender)
+      /* don't set setShouldHandleOnMouseDownDuringSelect(false) here as setSelectionRange could trigger additional calls of onSelect event 
+         and they may not be handled correctly (because of setSelectionRange calls or rerender) */
     },
     [updateSelectionIndexesWithMentionIfNeeded]
   );
@@ -421,10 +429,11 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       if (event.currentTarget === null) {
         return;
       }
-      // handle backspace change (onSelect is not called for backspace and caret position is outdated)
+      // handle backspace change
+      // onSelect is not called for backspace as selection is not changed and local caret index is outdated
       setCaretIndex(undefined);
       const newValue = updatedValue ?? '';
-      const triggerText = mentionLookupOptions?.trigger ?? defaultMentionTrigger;
+      const triggerText = mentionLookupOptions?.trigger ?? DEFAULT_MENTION_TRIGGER;
 
       const newTextLength = newValue.length;
       // updating indexes to set between 0 and text length, otherwise selectionRange won't be set correctly
@@ -474,7 +483,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
             setCurrentTriggerStartIndex(tagIndex);
           }
           if (tagIndex === -1) {
-            updateMentionSuggestions([]);
+            await debouncedQueryUpdate(undefined);
           } else {
             // In the middle of a @mention lookup
             if (tagIndex > -1) {
@@ -488,10 +497,11 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
       }
       let result = '';
       if (tagsValue.length === 0) {
-        // no tags in the string, htmlTextValue is a string
+        // no tags in the string and newValue should be used as a result string
         result = newValue;
       } else {
-        // there are tags in the text value, htmlTextValue is html string
+        // there are tags in the text value and htmlTextValue is html string
+        // find diff between old and new text
         const { changeStart, oldChangeEnd, newChangeEnd } = findStringsDiffIndexes({
           oldText: inputTextValue,
           newText: newValue,
@@ -500,8 +510,8 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           currentSelectionStart: currentSelectionStartValue,
           currentSelectionEnd: currentSelectionEndValue
         });
-        // get updated html string
         const change = newValue.substring(changeStart, newChangeEnd);
+        // get updated html string
         const updatedContent = updateHTML({
           htmlText: htmlTextValue,
           oldPlainText: inputTextValue,
@@ -513,6 +523,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           mentionTrigger: triggerText
         });
         result = updatedContent.updatedHTML;
+        // update caret index if needed
         if (updatedContent.updatedSelectionIndex !== null) {
           setCaretIndex(updatedContent.updatedSelectionIndex);
           setSelectionEndValue(updatedContent.updatedSelectionIndex);
@@ -522,7 +533,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
 
       onChange && onChange(event, result);
     },
-    [onChange, mentionLookupOptions, setCaretIndex, setCaretPosition, updateMentionSuggestions, debouncedQueryUpdate]
+    [onChange, mentionLookupOptions, setCaretIndex, setCaretPosition, debouncedQueryUpdate]
   );
 
   return (
@@ -555,9 +566,12 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           value={inputTextValue}
           onChange={(e, newValue) => {
             // Remove when switching to react 17+, currently needed because of https://legacy.reactjs.org/docs/legacy-event-pooling.html
+
             // Prevents React from resetting event's properties
             e.persist();
+
             setInputTextValue(newValue ?? '');
+
             handleOnChange(
               e,
               tagsValue,
@@ -570,8 +584,12 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
               e.currentTarget.selectionEnd === null ? undefined : e.currentTarget.selectionEnd,
               newValue
             );
+
+            return;
+            onChange(e, newValue);
           }}
           onSelect={(e) => {
+            // update selection if needed
             if (caretIndex !== undefined) {
               setCaretIndex(undefined);
               // sometimes setting selectionRage in effect for updating caretIndex doesn't work as expected and onSelect should handle this case
@@ -592,8 +610,8 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
           onMouseDown={() => {
             // as events order is onMouseDown -> onSelect -> onClick
             // onClick and onMouseDown can't handle clicking on mention event because
+            // onMouseDown doesn't have correct selectionRange yet and
             // onClick already has wrong range as it's called after onSelect that updates the selection range
-            // onMouseDown doesn't have correct selectionRange yet
             // so we need to handle onMouseDown to prevent onSelect default behavior
             setShouldHandleOnMouseDownDuringSelect(true);
           }}
@@ -602,6 +620,7 @@ export const TextFieldWithMention = (props: TextFieldWithMentionProps): JSX.Elem
             setShouldHandleOnMouseDownDuringSelect(true);
           }}
           onBlur={() => {
+            // setup all flags to default values when text field loses focus
             setShouldHandleOnMouseDownDuringSelect(false);
             setCaretIndex(undefined);
             setSelectionStartValue(null);
